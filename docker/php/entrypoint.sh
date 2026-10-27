@@ -50,11 +50,13 @@ if [ -d "${APP_ROOT}/config" ]; then
 fi
 
 # ---------- 3) 可写目录兜底 ----------
-mkdir -p "${APP_ROOT}/fqxy/ache" "${APP_ROOT}/fqxy/acher" \
-         "${APP_ROOT}/fqxy/acher/map" "${APP_ROOT}/fqxy/acher/guoz" \
-         "${APP_ROOT}/fqxy/acher/phb" "${APP_ROOT}/fqxy/ip" \
-         "${APP_ROOT}/acher" "${APP_ROOT}/acher/map" \
-         "${APP_ROOT}/acher/guoz" "${APP_ROOT}/acher/phb"
+for d in fqxy/ache fqxy/ache/gm \
+         fqxy/acher/all_boss fqxy/acher/boss fqxy/acher/bp fqxy/acher/bug \
+         fqxy/acher/guoz fqxy/acher/gz fqxy/acher/hdjc fqxy/acher/lock \
+         fqxy/acher/lt fqxy/acher/ltbw fqxy/acher/map fqxy/acher/phb \
+         fqxy/acher/pm fqxy/ip acher acher/map acher/guoz acher/phb; do
+  mkdir -p "${APP_ROOT}/$d"
+done
 
 # WWW/ache 必须指向游戏层存档目录
 if [ ! -L "${APP_ROOT}/ache" ]; then

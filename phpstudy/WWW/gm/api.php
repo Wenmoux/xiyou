@@ -484,22 +484,50 @@ switch ($action) {
         break;
 
     case 'system.refreshPublic':
-        // 原版 gm22/23：清理公共缓存（acher 下的临时锁与公告）
+        // 原版 gm22/23：清理公共缓存
+        //
+        // 注意：只删缓存文件，保留目录结构。
+        // acher 下的 hdjc / map / guoz / phb 等目录是运行期必需的，
+        // 原端脚本直接 fopen 写入，不会自己 mkdir，删掉会导致首页锁文件
+        // 无法创建，表现就是等 5 秒后报「服务器开小差了」。
         $root = dirname(GM_ROOT) . '/fqxy/acher';
         if (!is_dir($root)) gm_json_error('公共缓存目录不存在');
 
         $removed = 0;
-        $keep = array('index.php', 'index1.php');
+        $keepFiles = array('index.php', 'index1.php');
+
         $dh = @opendir($root);
         if ($dh) {
             while (($f = readdir($dh)) !== false) {
                 if ($f === '.' || $f === '..') continue;
-                if (in_array($f, $keep, true)) continue;
+                if (in_array($f, $keepFiles, true)) continue;
+
                 $p = $root . '/' . $f;
-                if (is_dir($p)) $removed += gm_rmdir($p);
+
+                if (is_dir($p)) {
+                    // 目录保留，只清空里面的缓存文件
+                    $inner = @scandir($p);
+                    if ($inner) {
+                        foreach ($inner as $g) {
+                            if ($g === '.' || $g === '..') continue;
+                            $gp = $p . '/' . $g;
+                            if (is_file($gp) && @unlink($gp)) $removed++;
+                        }
+                    }
+                } else {
+                    if (@unlink($p)) $removed++;
+                }
             }
             closedir($dh);
         }
+
+        // 兜底：确保必需目录都在
+        $need = array('hdjc','map','guoz','phb','boss','bp','bug','gz','lock','lt','ltbw','pm','all_boss');
+        foreach ($need as $d) {
+            $dp = $root . '/' . $d;
+            if (!is_dir($dp)) @mkdir($dp, 0777, true);
+        }
+
         gm_json_ok(array('removed' => $removed));
         break;
 

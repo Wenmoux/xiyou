@@ -70,11 +70,15 @@ RUN set -eux; \
       rm -rf /var/www/hxxy/ache; \
     fi; \
     ln -sfn /var/www/hxxy/fqxy/ache /var/www/hxxy/ache; \
-    mkdir -p /var/www/hxxy/fqxy/ache /var/www/hxxy/fqxy/acher \
-             /var/www/hxxy/fqxy/acher/map /var/www/hxxy/fqxy/acher/guoz \
-             /var/www/hxxy/fqxy/acher/phb /var/www/hxxy/fqxy/ip \
-             /var/www/hxxy/acher /var/www/hxxy/acher/map \
-             /var/www/hxxy/acher/guoz /var/www/hxxy/acher/phb; \
+    for base in /var/www/hxxy/fqxy /var/www/hxxy; do \
+      mkdir -p \
+        "$base"/ache "$base"/ache/gm \
+        "$base"/acher/all_boss "$base"/acher/boss "$base"/acher/bp \
+        "$base"/acher/bug "$base"/acher/guoz "$base"/acher/gz \
+        "$base"/acher/hdjc "$base"/acher/lock "$base"/acher/lt \
+        "$base"/acher/ltbw "$base"/acher/map "$base"/acher/phb \
+        "$base"/acher/pm "$base"/ip; \
+    done; \
     chown -R www-data:www-data /var/www/hxxy; \
     chmod -R 777 /var/www/hxxy/fqxy/ache /var/www/hxxy/fqxy/acher \
                  /var/www/hxxy/acher /var/www/hxxy/fqxy/ip
