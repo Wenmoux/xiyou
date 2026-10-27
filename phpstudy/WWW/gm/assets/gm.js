@@ -622,26 +622,6 @@
   /* ============================================================
      操作
      ============================================================ */
-  function bindOps() {
-    var bForm = $('#broadcastForm');
-    bForm.addEventListener('submit', function (e) {
-      e.preventDefault();
-      var btn = $('button[type=submit]', bForm);
-      var text = bForm.text.value.trim();
-      if (!text) return;
-
-      busy(btn, true);
-      api('messages.broadcast', { text: text }).then(function () {
-        busy(btn, false);
-        bForm.reset();
-        toast('公告已发布');
-      }).catch(function (ex) {
-        busy(btn, false);
-        toast(ex.message, true);
-      });
-    });
-
-  }
 
   /* ============================================================
      系统维护与全服操作
@@ -1117,14 +1097,24 @@
     }
     booted = true;
 
-    bindNav();
-    bindPlayers();
-    bindWorld();
-    bindOps();
-    bindItemPicker();
-    bindSystemOps();
-    bindMessages();
-    bindLogout();
+    // 逐个绑定并隔离错误：某个绑定失败不应影响其余功能
+    [
+      ['导航', bindNav],
+      ['玩家', bindPlayers],
+      ['世界', bindWorld],
+      ['物品选择器', bindItemPicker],
+      ['系统操作', bindSystemOps],
+      ['消息', bindMessages],
+      ['退出', bindLogout]
+    ].forEach(function (item) {
+      try {
+        item[1]();
+      } catch (err) {
+        if (window.console && console.error) {
+          console.error('[GM] ' + item[0] + ' 绑定失败:', err.message);
+        }
+      }
+    });
 
     loadOverview();
 
