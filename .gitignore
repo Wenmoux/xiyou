@@ -1,0 +1,57 @@
+# ============================================================
+# 幻想西游 Docker 化改造
+# ============================================================
+
+# ---------- 快照/工具 ----------
+.alma-snapshots/
+.idea/
+.DS_Store
+Thumbs.db
+*~
+
+# ---------- 部署环境（含真实密码，绝不入库） ----------
+docker/.env
+*.env
+!.env.example
+
+# ---------- Windows 原端二进制（体积大且无跨平台价值） ----------
+phpstudy/Apache/
+phpstudy/MySQL/
+phpstudy/nginx/
+phpstudy/php52/
+phpstudy/php53/
+phpstudy/php53n/
+phpstudy/php55/
+phpstudy/php55n/
+phpstudy/php70n/
+phpstudy/SQL-Front/
+phpstudy/tools/
+phpstudy/tmp/
+phpstudy/IIS/
+phpstudy/backup/
+phpstudy/*.exe
+phpstudy/*.dll
+phpstudy/*.chm
+phpstudy/manual.chm
+phpstudy/install.log
+phpstudy/phpshao.dll
+
+# ---------- 运行期缓存与玩家数据（隐私 + 易变） ----------
+phpstudy/WWW/ache/*
+!phpstudy/WWW/ache/.gitkeep
+phpstudy/WWW/acher/*
+!phpstudy/WWW/acher/.gitkeep
+phpstudy/WWW/fqxy/ache/*
+!phpstudy/WWW/fqxy/ache/.gitkeep
+phpstudy/WWW/fqxy/acher/*
+!phpstudy/WWW/fqxy/acher/.gitkeep
+phpstudy/WWW/fqxy/ip/*
+!phpstudy/WWW/fqxy/ip/.gitkeep
+phpstudy/WWW/ache/gm/*
+phpstudy/WWW/fqxy/ache/gm/*
+
+# ---------- 备份/临时 ----------
+*.bak
+*.log
+*.zip
+!docker/mysql-init/*.sql

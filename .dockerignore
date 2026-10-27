@@ -1,0 +1,26 @@
+# ============================================================
+# Docker 构建上下文裁剪
+# 只保留：游戏 Web 源码 + docker 构建配置
+# 排除：Windows 二进制、MySQL 数据目录、快照、IDE 垃圾
+# ============================================================
+
+# 先排除一切
+**
+
+# 构建配置
+!docker
+!docker/**
+!docker/php/**
+!docker/apache/**
+!docker/mysql-init/**
+
+# 游戏 Web 源码
+!phpstudy
+!phpstudy/WWW
+!phpstudy/WWW/**
+
+# 源码里的无用文件
+phpstudy/WWW/.idea
+phpstudy/WWW/.DS_Store
+phpstudy/WWW/**/.DS_Store
+phpstudy/WWW/**/__MACOSX

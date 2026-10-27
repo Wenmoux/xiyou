@@ -1,0 +1,71 @@
+# 幻想西游一键端 - Docker 编排
+# 用法：
+#   cp .env.example .env && vi .env      # 按需修改端口/地址/密码
+#   docker compose up -d --build
+#   浏览器打开 http://<服务器IP>:8080/
+name: hxxy
+
+services:
+  mysql:
+    image: mysql:5.5.62
+    container_name: hxxy-mysql
+    restart: unless-stopped
+    command:
+      # 关键：服务端默认字符集必须是 utf8。
+      # 数据实际以 UTF-8 存储、表是 utf8、页面声明 UTF-8，
+      # 而基础连接不执行 set names，故默认值决定中文是否正确。
+      - --character-set-server=utf8
+      - --collation-server=utf8_general_ci
+      # 原端 sql_mode 无 STRICT，且存在 '0000-00-00 00:00:00' 零日期数据
+      - --sql-mode=NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION
+      - --skip-name-resolve
+      - --max_connections=512
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-change_me_root_password}
+      MYSQL_DATABASE: xyy
+      MYSQL_USER: ${DB_USER:-hxxy}
+      MYSQL_PASSWORD: ${DB_PASS:-change_me_db_password}
+    volumes:
+      - mysql-data:/var/lib/mysql
+      # 首次启动（数据卷为空）自动导入三套库
+      - ./mysql-init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-p${MYSQL_ROOT_PASSWORD:-change_me_root_password}"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 60s
+    networks: [hxxy]
+
+  web:
+    build:
+      context: ..
+      dockerfile: docker/php/Dockerfile
+    container_name: hxxy-web
+    restart: unless-stopped
+    depends_on:
+      - mysql
+    environment:
+      DB_HOST: mysql
+      DB_PORT: "3306"
+      DB_USER: ${DB_USER:-hxxy}
+      DB_PASS: ${DB_PASS:-change_me_db_password}
+      SITE_HOST: ${SITE_HOST:-localhost}
+      SITE_PORT: ${SITE_PORT:-8080}
+      SITE_HOST_OVERRIDE: ${SITE_HOST_OVERRIDE:-}
+    ports:
+      - "${HTTP_PORT:-8080}:80"
+    volumes:
+      # 玩家存档（.ini 缓存）持久化。
+      # fqxy/ache 是唯一真实存储，WWW/ache 是指向它的软链接（见 Dockerfile）。
+      # 不挂这个卷，容器重建 = 所有玩家进度清零。
+      - web-data:/var/www/hxxy/fqxy/ache
+    networks: [hxxy]
+
+volumes:
+  mysql-data:
+  web-data:
+
+networks:
+  hxxy:
+    driver: bridge

@@ -1,0 +1,19 @@
+解压一键端文件到D盘
+用记事本打开
+D:\phpstudy\WWW\config\config.php
+把里面的IP改成你的   使用Windows+R键打开“运行”窗口，然后输入CMD进入命令提示窗口 进入命令窗口之后，输入：ipconfig/all 回车即可看到整个电脑的详细的IP配置信息 IPV4那个就是
+启动D/phpstudy 点击【启动】里面的服务
+然后输入你的IP进入游戏 手机电脑都可
+打开网页时报出on line27错误 在phpstudy面板修改php版本5.5n即可 相似的错误都如此尝试
+完成任务时报【没有找到任务变量XXX】 点返回游戏重新点击任务尝试一般都可以继续，该bug未解决
+
+如何开局得银两：gm后台搜索代码 663 发送物品金锭 然后去玄武大街钱老板那里兑换 一个金锭可换99亿银两
+gm地址:http://XXX.XXX.XXX.XXX/admin/login.php
+XXX改成你的地址
+gm登录账号：adminroot 123456
+gm后台目前只链接了物品wp的数据库，所以只能发送物品（材料，消耗品等）物品代码位置：D:\phpstudy\WWW\fqxy\wp下的wpxx01-wpxx12表 
+修改装备需要查询代码（跟上边的类似 在zbxx01-zbxx08）后去数据库下面改（路径XYY下面的zb1000000X表，注意每个账户是单独一张表，找对你自己的）
+修改gm账号：xxjyuser下的gmuser表 不知道怎么改的可以仿照里面有的数据 注意密码是加密过的 可以从账号表中复制过来
+D:\phpstudy\WWW\ache\gm\user2.ini和D:\phpstudy\WWW\fqxy\ache\gm\user2.ini中的信息也改成你的
+
+目前游戏中许多功能暂未完善，如宠物技能、仓库、各类活动等
