@@ -334,6 +334,76 @@ $u = gm_user();
             </form>
           </article>
 
+          <article class="panel">
+            <header class="panel__head"><h3>发放装备</h3></header>
+            <p class="panel__note">
+              直接写入玩家装备表，进游戏「物品 → 装备」可见。
+            </p>
+
+            <div class="picker">
+              <div class="picker__cats" id="equipCats"></div>
+
+              <div class="picker__bar">
+                <div class="search search--sm">
+                  <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+                    <circle cx="9" cy="9" r="5.5"/><path d="m13.2 13.2 3.3 3.3" stroke-linecap="round"/>
+                  </svg>
+                  <input id="equipSearch" type="search" placeholder="搜索装备名称或 ID" spellcheck="false">
+                </div>
+                <span class="picker__count" id="equipCount"></span>
+              </div>
+
+              <div class="picker__list" id="equipList" role="listbox"></div>
+            </div>
+
+            <form class="form" id="equipForm">
+              <div class="picked" id="equipPicked">
+                <p class="picked__empty">尚未选择装备</p>
+              </div>
+              <div class="grid2">
+                <label class="field">
+                  <span class="field__label">发给玩家ID</span>
+                  <input class="field__input" name="wjid" placeholder="10000001" required>
+                </label>
+                <label class="field">
+                  <span class="field__label">星级（0-15）</span>
+                  <input class="field__input" name="star" type="number" value="0" min="0" max="15">
+                </label>
+              </div>
+              <button class="btn btn--primary" type="submit" id="equipSubmit" disabled>请先选择装备</button>
+            </form>
+          </article>
+
+          <article class="panel">
+            <header class="panel__head"><h3>GM 账号</h3></header>
+            <p class="panel__note">
+              管理后台登录账号。改完密码后建议点「同步登录缓存」，否则旧缓存可能仍生效。
+            </p>
+
+            <ul class="gmlist" id="gmList"></ul>
+
+            <form class="form" id="gmForm">
+              <div class="grid2">
+                <label class="field">
+                  <span class="field__label">账号</span>
+                  <input class="field__input" name="username" placeholder="字母数字下划线" required>
+                </label>
+                <label class="field">
+                  <span class="field__label">显示名</span>
+                  <input class="field__input" name="name" placeholder="显示名（可空）">
+                </label>
+              </div>
+              <label class="field">
+                <span class="field__label">密码（至少 6 位）</span>
+                <input class="field__input" name="password" type="password" placeholder="设置登录密码" required>
+              </label>
+              <div class="btnrow">
+                <button class="btn btn--primary" type="submit">新增账号</button>
+                <button class="btn btn--ghost" type="button" id="gmSync">同步登录缓存</button>
+              </div>
+            </form>
+          </article>
+
           <article class="panel panel--items">
             <header class="panel__head"><h3>发放物品</h3></header>
 

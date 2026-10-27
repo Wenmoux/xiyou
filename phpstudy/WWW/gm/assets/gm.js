@@ -104,7 +104,7 @@
     if (name === 'overview') loadOverview();
     if (name === 'players') loadPlayers();
     if (name === 'world') loadWorld();
-    if (name === 'ops') { loadItemPicker(); loadNews(); }
+    if (name === 'ops') { loadItemPicker(); loadEquipPicker(); loadNews(); loadGmAccounts(); }
   }
 
   /* ============================================================
@@ -803,6 +803,344 @@
   }
 
   /* ============================================================
+     装备选择器
+     ============================================================ */
+  var EQUIPS = null;
+  var equipCat = 0;
+  var equipKw = '';
+  var equipShown = 0;
+  var equipPicked = [];
+
+  var EQ_CATS = {
+    1: '枪', 2: '刀', 3: '枪', 4: '剑', 5: '斧', 6: '锤',
+    7: '鞭', 8: '扇', 9: '头盔', 10: '衣服', 11: '鞋子',
+    12: '项链', 13: '戒指', 14: '手镯', 15: '腰带',
+    16: '披风', 17: '护腕', 18: '面饰', 19: '法宝', 20: '饰品', 21: '其他'
+  };
+
+  function loadEquips() {
+    if (EQUIPS) return Promise.resolve(EQUIPS);
+    return fetch('data/equips.min.json', { credentials: 'same-origin' })
+      .then(function (r) { return r.json(); })
+      .then(function (list) { EQUIPS = list; return EQUIPS; });
+  }
+
+  function equipFiltered() {
+    if (!EQUIPS) return [];
+    var kw = equipKw.toLowerCase();
+    return EQUIPS.filter(function (e) {
+      if (equipCat && e.cat !== equipCat) return false;
+      if (!kw) return true;
+      return String(e.i) === kw || e.n.toLowerCase().indexOf(kw) >= 0;
+    });
+  }
+
+  function renderEquipCats() {
+    var box = $('#equipCats');
+    if (!box || !EQUIPS) return;
+    box.innerHTML = '';
+
+    var counts = {};
+    EQUIPS.forEach(function (e) { counts[e.cat] = (counts[e.cat] || 0) + 1; });
+
+    function mk(id, label, n) {
+      var b = el('button', 'cat' + (equipCat === id ? ' is-active' : ''));
+      b.type = 'button';
+      b.appendChild(document.createTextNode(label));
+      b.appendChild(el('span', 'cat__n', String(n)));
+      b.addEventListener('click', function () {
+        equipCat = id;
+        renderEquipCats();
+        renderEquips(true);
+      });
+      box.appendChild(b);
+    }
+
+    mk(0, '全部', EQUIPS.length);
+    Object.keys(counts).sort(function (a, b) { return a - b; }).forEach(function (c) {
+      var k = parseInt(c, 10);
+      mk(k, EQ_CATS[k] || ('类型' + k), counts[c]);
+    });
+  }
+
+  function renderEquips(reset) {
+    var box = $('#equipList');
+    if (!box) return;
+    if (reset) { box.innerHTML = ''; equipShown = 0; }
+
+    var list = equipFiltered();
+    var cnt = $('#equipCount');
+    if (cnt) cnt.textContent = list.length + ' 件';
+
+    if (!list.length) {
+      box.innerHTML = '<p class="empty" style="padding:32px 12px">没有匹配的装备</p>';
+      return;
+    }
+
+    var slice = list.slice(equipShown, equipShown + 80);
+
+    slice.forEach(function (e) {
+      var on = equipPicked.some(function (p) { return p.i === e.i; });
+      var row = el('div', 'item' + (on ? ' is-on' : ''));
+      row.dataset.id = e.i;
+
+      row.appendChild(el('span', 'item__id', String(e.i)));
+
+      var main = el('div', 'item__main');
+      main.appendChild(el('span', 'item__name', e.n));
+
+      var st = el('span', 'item__stat');
+      if (e.atk) st.appendChild(el('span', 's-atk', '攻 ' + e.atk));
+      if (e.def) st.appendChild(el('span', 's-def', '防 ' + e.def));
+      if (e.hp)  st.appendChild(el('span', 's-hp', '血 ' + e.hp));
+      main.appendChild(st);
+      row.appendChild(main);
+
+      row.appendChild(el('span', 'item__tag', 'Lv' + e.lv));
+
+      row.addEventListener('click', function () { toggleEquip(e); });
+      box.appendChild(row);
+    });
+
+    equipShown += slice.length;
+
+    if (equipShown < list.length) {
+      var more = el('div', 'picker__more', '显示更多（还有 ' + (list.length - equipShown) + ' 件）');
+      more.addEventListener('click', function () { more.remove(); renderEquips(false); });
+      box.appendChild(more);
+    }
+  }
+
+  function toggleEquip(e) {
+    var i = -1;
+    for (var k = 0; k < equipPicked.length; k++) {
+      if (equipPicked[k].i === e.i) { i = k; break; }
+    }
+    if (i >= 0) equipPicked.splice(i, 1);
+    else equipPicked.push({ i: e.i, n: e.n });
+
+    renderEquipPicked();
+    var row = $('#equipList .item[data-id="' + e.i + '"]');
+    if (row) {
+      row.classList.toggle('is-on',
+        equipPicked.some(function (p) { return p.i === e.i; }));
+    }
+    syncEquipSubmit();
+  }
+
+  function syncEquipSubmit() {
+    var btn = $('#equipSubmit');
+    if (!btn) return;
+    btn.disabled = equipPicked.length === 0;
+    btn.textContent = equipPicked.length
+      ? ('发放 ' + equipPicked.length + ' 件装备')
+      : '请先选择装备';
+  }
+
+  function renderEquipPicked() {
+    var box = $('#equipPicked');
+    if (!box) return;
+    box.innerHTML = '';
+
+    if (!equipPicked.length) {
+      box.appendChild(el('p', 'picked__empty', '尚未选择装备'));
+      return;
+    }
+
+    equipPicked.forEach(function (p, idx) {
+      var chip = el('span', 'chip');
+      chip.appendChild(document.createTextNode(p.n));
+      chip.appendChild(el('span', 'chip__id', '#' + p.i));
+
+      var x = el('button', 'chip__x', '×');
+      x.type = 'button';
+      x.addEventListener('click', function () {
+        equipPicked.splice(idx, 1);
+        renderEquipPicked();
+        var row = $('#equipList .item[data-id="' + p.i + '"]');
+        if (row) row.classList.remove('is-on');
+        syncEquipSubmit();
+      });
+      chip.appendChild(x);
+      box.appendChild(chip);
+    });
+  }
+
+  function loadEquipPicker() {
+    if (EQUIPS) {
+      if (!$('#equipList').children.length) {
+        renderEquipCats();
+        renderEquips(true);
+        renderEquipPicked();
+        syncEquipSubmit();
+      }
+      return;
+    }
+    loadEquips().then(function () {
+      renderEquipCats();
+      renderEquips(true);
+      renderEquipPicked();
+      syncEquipSubmit();
+    }).catch(function (ex) {
+      toast('装备库加载失败：' + ex.message, true);
+    });
+  }
+
+  function bindEquipPicker() {
+    var search = $('#equipSearch');
+    var timer = null;
+    if (search) {
+      search.addEventListener('input', function () {
+        clearTimeout(timer);
+        timer = setTimeout(function () {
+          equipKw = search.value.trim();
+          renderEquips(true);
+        }, 180);
+      });
+    }
+
+    var form = $('#equipForm');
+    if (form) {
+      form.addEventListener('submit', function (e) {
+        e.preventDefault();
+        if (!equipPicked.length) return;
+
+        var btn = $('#equipSubmit');
+        var wjid = form.wjid.value.trim();
+        var star = form.star.value || 0;
+        if (!/^\d{8,}$/.test(wjid)) {
+          toast('请输入正确的玩家ID', true);
+          return;
+        }
+
+        busy(btn, true);
+
+        var seq = Promise.resolve();
+        equipPicked.slice().forEach(function (p) {
+          seq = seq.then(function () {
+            return api('equips.offer', { wjid: wjid, zbid: p.i, star: star });
+          });
+        });
+
+        seq.then(function () {
+          busy(btn, false);
+          toast('已发放 ' + equipPicked.length + ' 件装备');
+          equipPicked = [];
+          renderEquipPicked();
+          $$('#equipList .item').forEach(function (r) {
+            r.classList.remove('is-on');
+          });
+          syncEquipSubmit();
+        }).catch(function (ex) {
+          busy(btn, false);
+          toast(ex.message, true);
+        });
+      });
+    }
+  }
+
+  /* ============================================================
+     GM 账号管理
+     ============================================================ */
+  function loadGmAccounts() {
+    var box = $('#gmList');
+    if (!box) return;
+
+    api('gm.list').then(function (j) {
+      box.innerHTML = '';
+      var rows = j.rows || [];
+      if (!rows.length) {
+        var li0 = el('li');
+        li0.appendChild(el('span', 'gmlist__who', '暂无账号'));
+        box.appendChild(li0);
+        return;
+      }
+
+      var meName = $('#gmName') ? $('#gmName').textContent.trim() : '';
+
+      rows.forEach(function (r) {
+        var li = el('li');
+
+        var who = el('span', 'gmlist__who');
+        who.appendChild(el('span', 'gmlist__name', r.name || r.username));
+        who.appendChild(el('span', 'gmlist__user', r.username));
+        if (r.name === meName) {
+          who.appendChild(el('span', 'gmlist__me', '当前'));
+        }
+        li.appendChild(who);
+
+        var ops = el('span', 'gmlist__ops');
+
+        var bPwd = el('button', 'iconbtn', '🔑');
+        bPwd.type = 'button';
+        bPwd.title = '重置密码';
+        bPwd.addEventListener('click', function () {
+          var np = prompt('为「' + r.username + '」设置新密码（至少 6 位）');
+          if (np === null) return;
+          if (np.length < 6) { toast('密码至少 6 位', true); return; }
+          api('gm.resetPassword', { username: r.username, password: np })
+            .then(function () { toast('密码已更新'); })
+            .catch(function (ex) { toast(ex.message, true); });
+        });
+        ops.appendChild(bPwd);
+
+        var bDel = el('button', 'iconbtn iconbtn--danger', '×');
+        bDel.type = 'button';
+        bDel.title = '删除账号';
+        bDel.addEventListener('click', function () {
+          if (!confirm('删除 GM 账号「' + r.username + '」？')) return;
+          api('gm.delete', { username: r.username })
+            .then(function () { toast('已删除'); loadGmAccounts(); })
+            .catch(function (ex) { toast(ex.message, true); });
+        });
+        ops.appendChild(bDel);
+
+        li.appendChild(ops);
+        box.appendChild(li);
+      });
+    }).catch(function () {});
+  }
+
+  function bindGmAccounts() {
+    var form = $('#gmForm');
+    if (form) {
+      form.addEventListener('submit', function (e) {
+        e.preventDefault();
+        var btn = $('button[type=submit]', form);
+        busy(btn, true);
+
+        api('gm.create', {
+          username: form.username.value.trim(),
+          name: form.name.value.trim(),
+          password: form.password.value
+        }).then(function () {
+          busy(btn, false);
+          form.reset();
+          toast('GM 账号已创建');
+          loadGmAccounts();
+        }).catch(function (ex) {
+          busy(btn, false);
+          toast(ex.message, true);
+        });
+      });
+    }
+
+    var sync = $('#gmSync');
+    if (sync) {
+      sync.addEventListener('click', function () {
+        busy(sync, true);
+        api('gm.syncIni').then(function (j) {
+          busy(sync, false);
+          toast('已清理 ' + j.cleared + ' 个登录缓存');
+        }).catch(function (ex) {
+          busy(sync, false);
+          toast(ex.message, true);
+        });
+      });
+    }
+  }
+
+  /* ============================================================
      物品选择器
      ------------------------------------------------------------
      1016 件物品，一次只渲染 80 条，滚动时增量加载，
@@ -1104,6 +1442,8 @@
       ['世界', bindWorld],
       ['物品选择器', bindItemPicker],
       ['系统操作', bindSystemOps],
+      ['装备', bindEquipPicker],
+      ['GM账号', bindGmAccounts],
       ['消息', bindMessages],
       ['退出', bindLogout]
     ].forEach(function (item) {
@@ -1120,7 +1460,10 @@
 
     // 预加载物品库：用户切到操作页时数据已就绪，避免等待
     if (window.requestIdleCallback) {
-      requestIdleCallback(function () { loadItems().catch(function () {}); });
+      requestIdleCallback(function () {
+        loadItems().catch(function () {});
+        loadEquips().catch(function () {});
+      });
     } else {
       setTimeout(function () { loadItems().catch(function () {}); }, 600);
     }

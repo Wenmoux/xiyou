@@ -1604,3 +1604,97 @@ select.field__input option {
   background: var(--ink-100);
   color: var(--fg);
 }
+
+/* ============================================================
+   GM 账号列表
+   ============================================================ */
+.gmlist {
+  margin-bottom: var(--s4);
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.gmlist li {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: var(--s3);
+  padding: 9px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, .04);
+  font-size: 12.5px;
+}
+
+.gmlist li:last-child { border-bottom: 0; }
+
+.gmlist__who {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--s2);
+}
+
+.gmlist__name {
+  color: var(--ink-800);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.gmlist__user {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  color: var(--ink-500);
+}
+
+.gmlist__me {
+  font-size: 10px;
+  padding: 1px 6px;
+  border-radius: 99px;
+  background: var(--jade-glow);
+  color: #6bc3a4;
+}
+
+.gmlist__ops { display: flex; gap: var(--s1); }
+
+.iconbtn {
+  display: grid;
+  place-items: center;
+  width: 26px; height: 26px;
+  border-radius: var(--r-sm);
+  color: var(--ink-500);
+  font-size: 14px;
+  line-height: 1;
+  transition: all var(--dur-1) var(--ease);
+}
+
+.iconbtn:hover { background: var(--ink-200); color: var(--ink-800); }
+.iconbtn--danger:hover { background: rgba(224, 72, 58, .15); color: var(--cinnabar); }
+
+.btnrow {
+  display: flex;
+  gap: var(--s2);
+  flex-wrap: wrap;
+}
+
+.btnrow .btn { flex: 1 1 auto; }
+
+/* 装备列表的属性徽标 */
+.item__stat {
+  display: flex;
+  gap: var(--s2);
+  margin-top: 2px;
+}
+
+.item__stat span {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--ink-500);
+}
+
+.item__stat .s-atk { color: #e0725c; }
+.item__stat .s-def { color: #6ba3d4; }
+.item__stat .s-hp  { color: #6bc3a4; }
+
+@media (max-width: 720px) {
+  .btnrow .btn { flex: 1 1 100%; }
+}

@@ -29,6 +29,19 @@ if ($raw !== false && $raw !== '') {
     }
 }
 
+/** 清玩家物品/装备相关缓存，让游戏重新从数据库读取 */
+function gm_clear_item_cache($wjid)
+{
+    $dir = gm_ache_root() . '/' . (int)$wjid;
+    if (!is_dir($dir)) return 0;
+    $n = 0;
+    foreach (array('zb.ini','zbb.ini','zzck.ini','wp.ini','wpp.ini','ckzb.ini') as $f) {
+        $fp = $dir . '/' . $f;
+        if (is_file($fp) && @unlink($fp)) $n++;
+    }
+    return $n;
+}
+
 /** 递归删除目录，返回删除的文件数 */
 function gm_rmdir($dir)
 {
@@ -342,6 +355,11 @@ switch ($action) {
         break;
 
     case 'items.offer':
+        // 发到玩家的「增值仓库」（zzck<wjid>），与原版 gm05/gm07 一致。
+        //
+        // 原版行为：写 zzck 表 → 游戏首页「增值仓库」里领取。
+        // 注意这里不能用 wp 表（那是背包），而且两类表都依赖
+        // ache/<wjid>/xxx.ini 缓存，写完必须删缓存让游戏重建。
         gm_use_game();
         $wid = (int)(isset($input['wjid']) ? $input['wjid'] : 0);
         $wp  = (int)(isset($input['wpid']) ? $input['wpid'] : 0);
@@ -349,17 +367,36 @@ switch ($action) {
         if ($wid <= 0 || $wp <= 0) gm_json_error('参数不完整');
         if ($num < 1 || $num > 9999) gm_json_error('数量需在 1-9999');
 
-        if (!gm_val("show tables like 'wp$wid'")) {
-            gm_json_error('该玩家没有背包表，请先让其进入一次游戏');
+        $tbl = 'zzck' . $wid;
+        if (!gm_val("show tables like '$tbl'")) {
+            gm_json_error('该玩家没有仓库表，请先让其进入一次游戏');
         }
 
-        $cur = (int)gm_val("select wpsl from wp$wid where wpid=$wp limit 1", 0);
-        if ($cur > 0) {
-            gm_exec("update wp$wid set wpsl = wpsl + $num where wpid=$wp");
+        // 已存在则累加，否则插入
+        $cur = gm_val("select wpsl from $tbl where wpid=$wp limit 1", null);
+        if ($cur !== null) {
+            gm_exec("update $tbl set wpsl = wpsl + $num where wpid=$wp");
         } else {
-            gm_exec("insert into wp$wid (id, wpid, wpsl, wpfl) values ($wp, $wp, $num, 0)");
+            $maxId = (int)gm_val("select ifnull(max(id),0) from $tbl", 0);
+            $newId = $maxId + 1;
+            gm_exec("insert into $tbl (id, wpid, wpsl, wpfl) values ($newId, $wp, $num, 4)");
         }
-        gm_json_ok(array('wpid' => $wp, 'num' => $num));
+
+        // 清缓存，游戏下次进入时从数据库重建
+        $cacheDir = gm_ache_root() . '/' . $wid;
+        $cleared = 0;
+        foreach (array('zzck.ini', 'wp.ini', 'wpp.ini') as $f) {
+            $fp = $cacheDir . '/' . $f;
+            if (is_file($fp) && @unlink($fp)) $cleared++;
+        }
+
+        gm_json_ok(array(
+            'wpid'    => $wp,
+            'num'     => $num,
+            'table'   => $tbl,
+            'cleared' => $cleared,
+            'hint'    => '玩家进入游戏首页 → 增值仓库 即可领取',
+        ));
         break;
 
     case 'messages.broadcast':
@@ -556,7 +593,7 @@ switch ($action) {
 
     // ================= 原版 GM 功能：全服操作 =================
     case 'system.giveAll':
-        // 原版 gm40/41/42：全服发奖励
+        // 全服发放：同样写 zzck（增值仓库），并清缓存
         gm_use_game();
         $wp = (int)(isset($input['wpid']) ? $input['wpid'] : 0);
         $num = (int)(isset($input['num']) ? $input['num'] : 1);
@@ -564,19 +601,31 @@ switch ($action) {
         if ($num < 1 || $num > 999) gm_json_error('数量需在 1-999');
 
         $players = gm_rows("select wjid from all_zt");
-        $ok = 0;
-        $fail = 0;
+        $ok = 0; $fail = 0; $cacheRoot = gm_ache_root();
+
         foreach ($players as $pl) {
             $wid = (int)$pl['wjid'];
-            if (!gm_val("show tables like 'wp$wid'")) { $fail++; continue; }
+            $tbl = 'zzck' . $wid;
 
-            $cur = (int)gm_val("select wpsl from wp$wid where wpid=$wp limit 1", 0);
-            if ($cur > 0) {
-                $r = gm_exec("update wp$wid set wpsl = wpsl + $num where wpid=$wp");
+            if (!gm_val("show tables like '$tbl'")) { $fail++; continue; }
+
+            $cur = gm_val("select wpsl from $tbl where wpid=$wp limit 1", null);
+            if ($cur !== null) {
+                $r = gm_exec("update $tbl set wpsl = wpsl + $num where wpid=$wp");
             } else {
-                $r = gm_exec("insert into wp$wid (id, wpid, wpsl, wpfl) values ($wp, $wp, $num, 0)");
+                $maxId = (int)gm_val("select ifnull(max(id),0) from $tbl", 0);
+                $r = gm_exec("insert into $tbl (id, wpid, wpsl, wpfl) values (" . ($maxId+1) . ", $wp, $num, 4)");
             }
-            if ($r !== false) $ok++; else $fail++;
+
+            if ($r !== false) {
+                $ok++;
+                foreach (array('zzck.ini','wp.ini','wpp.ini') as $f) {
+                    $fp = $cacheRoot . '/' . $wid . '/' . $f;
+                    if (is_file($fp)) @unlink($fp);
+                }
+            } else {
+                $fail++;
+            }
         }
         gm_json_ok(array('sent' => $ok, 'skipped' => $fail, 'total' => count($players)));
         break;
@@ -853,6 +902,156 @@ switch ($action) {
                 '兑换码'   => '依赖外部 SDK',
             ),
         ));
+        break;
+
+    // ================= 装备 =================
+    // 原端每人一张 zb<wjid> 表：zbid=装备ID, zbxj=星级,
+    // zbk1~5=孔位, zbxq1~5=镶嵌, zbpd=是否佩戴
+    case 'equips.offer':
+        gm_use_game();
+        $wid  = (int)(isset($input['wjid']) ? $input['wjid'] : 0);
+        $zbid = (int)(isset($input['zbid']) ? $input['zbid'] : 0);
+        $star = (int)(isset($input['star']) ? $input['star'] : 0);
+        if ($wid <= 0 || $zbid <= 0) gm_json_error('参数不完整');
+        if ($star < 0 || $star > 15) gm_json_error('星级需在 0-15');
+
+        $tbl = 'zb' . $wid;
+        if (!gm_val("show tables like '$tbl'")) {
+            gm_json_error('该玩家没有装备表，请先让其进入一次游戏');
+        }
+
+        // 同 ID 同星级视为已有，累加数量（装备无数量字段，只能再插一条）
+        $maxId = (int)gm_val("select ifnull(max(id),0) from $tbl", 0);
+        $newId = $maxId + 1;
+
+        $sql = "insert into $tbl
+                (id, zbid, zbxj, zbk1, zbxq1, zbk2, zbxq2, zbk3, zbxq3, zbk4, zbxq4, zbk5, zbxq5, zbpd)
+                values ($newId, $zbid, $star, 0,0, 0,0, 0,0, 0,0, 0,0, 0)";
+        if (gm_exec($sql) === false) gm_json_error('写入失败');
+
+        gm_clear_item_cache($wid);
+        gm_json_ok(array('zbid' => $zbid, 'star' => $star, 'id' => $newId, 'table' => $tbl));
+        break;
+
+    case 'equips.list':
+        // 查玩家当前装备
+        gm_use_game();
+        $wid = (int)(isset($input['wjid']) ? $input['wjid'] : 0);
+        if ($wid <= 0) gm_json_error('缺少玩家ID');
+
+        $tbl = 'zb' . $wid;
+        if (!gm_val("show tables like '$tbl'")) {
+            gm_json_ok(array('rows' => array()));
+            break;
+        }
+
+        $rows = gm_rows("select * from $tbl order by id desc limit 100");
+
+        // 挂上装备名字（从静态索引读，避免逐个查库）
+        $idxFile = GM_ROOT . '/data/equips.min.json';
+        $nameMap = array();
+        if (is_file($idxFile)) {
+            $arr = json_decode(file_get_contents($idxFile), true);
+            if (is_array($arr)) {
+                foreach ($arr as $e) $nameMap[$e['i']] = $e['n'];
+            }
+        }
+        foreach ($rows as &$r) {
+            $zid = (int)$r['zbid'];
+            $r['name'] = isset($nameMap[$zid]) ? $nameMap[$zid] : ('装备#' . $zid);
+        }
+        unset($r);
+
+        gm_json_ok(array('rows' => $rows));
+        break;
+
+    case 'equips.remove':
+        gm_use_game();
+        $wid = (int)(isset($input['wjid']) ? $input['wjid'] : 0);
+        $id  = (int)(isset($input['id']) ? $input['id'] : 0);
+        if ($wid <= 0 || $id <= 0) gm_json_error('参数不完整');
+
+        $tbl = 'zb' . $wid;
+        $n = gm_exec("delete from $tbl where id=$id");
+        gm_clear_item_cache($wid);
+        gm_json_ok(array('removed' => $n));
+        break;
+
+    // ================= GM 账号管理 =================
+    case 'gm.list':
+        gm_use_account();
+        $rows = gm_rows("select uid, name, username from gmuser order by uid asc");
+        gm_json_ok(array('rows' => $rows));
+        break;
+
+    case 'gm.create':
+        gm_use_account();
+        $user = trim(isset($input['username']) ? $input['username'] : '');
+        $name = trim(isset($input['name']) ? $input['name'] : '');
+        $pass = isset($input['password']) ? $input['password'] : '';
+
+        if ($user === '' || $pass === '') gm_json_error('账号和密码不能为空');
+        if (!preg_match('/^[A-Za-z0-9_]{3,25}$/', $user)) {
+            gm_json_error('账号只能字母数字下划线，3-25 位');
+        }
+        if (strlen($pass) < 6) gm_json_error('密码至少 6 位');
+
+        $e = gm_esc($user);
+        if (gm_val("select count(*) from gmuser where username='$e'", 0) > 0) {
+            gm_json_error('该账号已存在');
+        }
+
+        $hash = md5($pass . 'ALL_PS');
+        $n = gm_esc($name !== '' ? $name : $user);
+        gm_exec("insert into gmuser (name, username, password) values ('$n','$e','$hash')");
+
+        gm_json_ok(array('username' => $user, 'name' => $n));
+        break;
+
+    case 'gm.resetPassword':
+        gm_use_account();
+        $user = trim(isset($input['username']) ? $input['username'] : '');
+        $pass = isset($input['password']) ? $input['password'] : '';
+        if ($user === '' || strlen($pass) < 6) gm_json_error('密码至少 6 位');
+
+        $e = gm_esc($user);
+        $hash = md5($pass . 'ALL_PS');
+        $n = gm_exec("update gmuser set password='$hash' where username='$e'");
+        if (!$n) gm_json_error('账号不存在或密码未变');
+        gm_json_ok(array('username' => $user));
+        break;
+
+    case 'gm.delete':
+        gm_use_account();
+        $user = trim(isset($input['username']) ? $input['username'] : '');
+        if ($user === '') gm_json_error('缺少账号');
+
+        $me = gm_user();
+        $e = gm_esc($user);
+        $row = gm_row("select uid from gmuser where username='$e' limit 1");
+        if (!$row) gm_json_error('账号不存在');
+        if ($me && (int)$row['uid'] === (int)$me['uid']) {
+            gm_json_error('不能删除当前登录的账号');
+        }
+
+        gm_exec("delete from gmuser where username='$e'");
+        gm_json_ok(array('username' => $user));
+        break;
+
+    case 'gm.syncIni':
+        // 原端两个 user2.ini 是 GM 登录缓存，换账号后需同步，
+        // 否则旧缓存里的验证信息会让人以为「改密码没生效」
+        $paths = array(
+            dirname(GM_ROOT) . '/ache/gm/user2.ini',
+            dirname(GM_ROOT) . '/fqxy/ache/gm/user2.ini',
+        );
+        $done = 0;
+        foreach ($paths as $p) {
+            if (is_file($p)) { if (@unlink($p)) $done++; }
+            $dir = dirname($p);
+            if (!is_dir($dir)) @mkdir($dir, 0777, true);
+        }
+        gm_json_ok(array('cleared' => $done, 'hint' => '下次 GM 登录会自动重建缓存'));
         break;
 
     default:
