@@ -444,6 +444,9 @@ $cdid[]=$cmid;
 $clj[]=336;
 $npc[]=0;
 echo "<a href='xy.php?uid=$wjid&&cmd=$cmid&&sid=$a1'><font color=blue>增值仓库</font></a>"."<br>";
+
+// 礼包兑换：跳出游戏页，不占 cmd 序号
+echo "<a href='/cdk/?wjid=$wjid&pass=$a1'><font color=blue>兑换礼包</font></a>"."<br>";
 echo"<font color=black>【官方动态】</font>"."<br>";
 
 

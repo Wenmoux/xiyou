@@ -21,37 +21,6 @@ header("Content-type: text/html; charset=utf-8");
 
 <div style='width: device-width;display:block;word-break: break-all;word-wrap: break-word;'>
 
-<?php
-// ---- 礼包兑换入口 ----
-if (isset($_GET['uid']) && isset($_GET['sid'])) {
-    $__wj = htmlspecialchars($_GET['uid'], ENT_QUOTES);
-    $__sid = htmlspecialchars($_GET['sid'], ENT_QUOTES);
-    echo '<div class="cdk-entry"><a href="/cdk/?wjid=' . $__wj . '&pass=' . $__sid . '">'
-       . '&#127873; 兑换礼包'
-       . '</a></div>';
-}
-?>
-<style>
-.cdk-entry {
-  padding: 6px 10px;
-  text-align: right;
-  background: linear-gradient(180deg, #fff8e8 0%, #fdf2dc 100%);
-  border-bottom: 1px solid #e8dcc0;
-  font-size: 13px;
-}
-.cdk-entry a {
-  display: inline-block;
-  padding: 4px 12px;
-  background: linear-gradient(180deg, #f5a623 0%, #e08e0b 100%);
-  border: 1px solid #c97b08;
-  border-radius: 5px;
-  color: #fff;
-  text-decoration: none;
-  font-weight: 600;
-  text-shadow: 0 1px 1px rgba(0,0,0,.18);
-}
-.cdk-entry a:active { transform: translateY(1px); }
-</style>
 
 
 
