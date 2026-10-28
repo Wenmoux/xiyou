@@ -60,21 +60,46 @@
       body.append(k, data[k]);
     });
 
+    // 超时保护：请求悬挂时主动断开，避免界面永远停在加载态
+    var ms = opts.timeout || 20000;
+    var ctl = (typeof AbortController !== 'undefined') ? new AbortController() : null;
+    var timer = null;
+    var timedOut = false;
+    if (ctl) {
+      timer = setTimeout(function () {
+        timedOut = true;
+        ctl.abort();
+      }, ms);
+    }
+
     return fetch(API, {
       method: 'POST',
       body: body,
       credentials: 'same-origin',
-      headers: { 'X-Requested-With': 'fetch' }
+      headers: { 'X-Requested-With': 'fetch' },
+      signal: ctl ? ctl.signal : undefined
     }).then(function (r) {
+      if (timer) clearTimeout(timer);
       return r.json().catch(function () {
         throw new Error('返回格式异常');
       }).then(function (j) {
         if (!r.ok || j.ok === false) {
-          if (j && j.needLogin) { showGate(); }
+          if (j && j.needLogin) {
+            // 会话失效：清掉残留状态并回到登录页，避免卡在半截界面
+            showGate();
+            var gErr = document.querySelector('#gateErr');
+            if (gErr) gErr.textContent = '登录已过期，请重新登录';
+          }
           throw new Error((j && j.error) || ('HTTP ' + r.status));
         }
         return j;
       });
+    }).catch(function (ex) {
+      if (timer) clearTimeout(timer);
+      if (timedOut || (ex && ex.name === 'AbortError')) {
+        throw new Error('请求超时，请稍后重试');
+      }
+      throw ex;
     });
   }
 
@@ -110,10 +135,16 @@
   /* ============================================================
      登录
      ============================================================ */
+  // 这些状态在多个函数间共享，提前声明避免提升陷阱
+  var booted = false;
+  var playersLoaded = false;
+
   function showGate() {
     $('#gate').hidden = false;
     $('#shell').hidden = true;
     document.body.dataset.logged = '0';
+    booted = false;   // 允许重新登录后重新绑定
+    playersLoaded = false;
     var inp = $('#loginForm [name=username]');
     if (inp) setTimeout(function () { inp.focus(); }, 120);
   }
@@ -297,7 +328,6 @@
   /* ============================================================
      玩家
      ============================================================ */
-  var playersLoaded = false;
   var selectedWjid = null;
   var searchTimer = null;
 
@@ -321,6 +351,14 @@
       renderPlayers(j.rows || []);
     }).catch(function (ex) {
       playersLoaded = false;
+      // 失败时必须清掉骨架屏，否则界面永远停在加载态
+      tbody.innerHTML = '';
+      var tdErr = el('td');
+      tdErr.colSpan = 4;
+      tdErr.appendChild(el('p', 'empty', ex.message || '加载失败'));
+      var trErr = el('tr');
+      trErr.appendChild(tdErr);
+      tbody.appendChild(trErr);
       toast('玩家列表加载失败：' + ex.message, true);
     });
   }
@@ -1474,7 +1512,6 @@
   /* ============================================================
      启动
      ============================================================ */
-  var booted = false;
   function boot() {
     if (booted) {
       loadOverview();
