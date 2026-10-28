@@ -2,67 +2,6 @@
 header("Content-type: text/html; charset=utf-8");
 
 ?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
-<head lang="en">
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width,height=device-height,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black">
-    <meta name="format-detection" content="telephone=no">  
-<title>35博客游戏-注册</title>
-
-<link rel="stylesheet" href="../css/touchScreen/mobile.css" />
-<link rel="stylesheet" href="../css/touchScreen/h5game.css" />
-<link rel="stylesheet" href="../css/touchScreen/colorbutton.css" />
-<link rel="icon" href="../img/favicon.ico" type="image/x-icon" />
-<style type="text/css">
-#search{
-width:235px;
-height:32px;
-border-radius:10px;
-margin-top:5px;
-margin-bottom:5px;
-border:1px solid#ccc;
-background-color:transparent;
-transition:border-color ease-in-out .15s,box-shadow ease-in-out .15s;
-}
-#search1{
-width:82px;
-height:38px;
-background:#0086DB;
-border:0;
-border-radius:10px;
-margin-top:5px;
-color:white;
-font-size:16px;
-cursor:pointer;
-}
-input:focus{
-border-color:#66AFE9!important;	
-outline:0;
--webkit-box-shadow:inset 0 1px 1px rgba(0,0,0,.075),0 0 8px rgba(102,175,233,0.6);
--moz-box-shadow:inset 0 1px 1px rgba(0,0,0,.075),0 0 8px rgba(102,175,233,0.6);
-box-shadow:inset 0 1px 1px rgba(0,0,0,.075),0 0 8px rgba(102,175,233,0.6);
-}
-::-webkit-input-placeholder{
-	text-indent:20px;
-	font-size:16px;
-}
-::-moz-input-placeholder{
-	text-indent:20px;
-	font-size:16px;
-}
-
-	a{color: #0077E0;}	table{max-width: 600px;min-width: 280px;}	td{height:30px;}	.lbg{height:20px;border-bottom: 1px solid #DCDCDC;}	.btable{border-top: 1px solid #9DB3C5;}
-	.circle {width: 16px;height: 16px;line-height:16px;-moz-border-radius: 8px;-webkit-border-radius: 8px;border-radius: 8px;color: #fff;text-align:center;font-size: 10px;}
-	.red.circle{background: #e62727;}	.orange.circle{background: #ff5c00;}	.pink.circle{background: #e22092;}	.green.circle{background: #56A418;}	.blue.circle{background: #2981e4;}	.err{color: red;font-size: 13px;}
-</style>
-</head>
-<body>
-
-
 <?php
 
 
@@ -276,71 +215,124 @@ $zcxx="<font color=red>账号不能为空</font>";
 }
 
 ?>
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0a0806">
+<title>35博客 · 通行证注册</title>
+<link rel="icon" href="../img/favicon.ico" type="image/x-icon">
+<link rel="stylesheet" href="../css/touchScreen/xy-gate.css">
+</head>
+<body class="gate">
 
+<div class="gate__glow" aria-hidden="true"></div>
+<div class="gate__grain" aria-hidden="true"></div>
 
+<main class="gate__main">
 
+  <header class="gate__brand">
+    <div class="gate__seal" aria-hidden="true">
+      <svg viewBox="0 0 64 64" fill="none">
+        <circle cx="32" cy="32" r="27" stroke="currentColor" stroke-width="1.1" opacity=".35"/>
+        <circle cx="32" cy="32" r="18" stroke="currentColor" stroke-width=".9" opacity=".55"/>
+        <path d="M32 6v9M32 49v9M6 32h9M49 32h9" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+        <circle cx="32" cy="32" r="4.5" fill="currentColor"/>
+      </svg>
+    </div>
+    <h1 class="gate__title">开 启 西 游</h1>
+    <p class="gate__sub">35博客一站式通行证注册</p>
+  </header>
 
-<div class="g-hd f-cb">
+  <section class="gate__card">
+    <div class="gate__hint">
+      <span class="gate__rule"></span>
+      <span>填写通行证信息</span>
+      <span class="gate__rule"></span>
+    </div>
 
-    <img src="../images/logo1.jpg" alt="">
+    <form class="gate__form" action="<?echo "regist.php";?>" method="post" autocomplete="off">
 
-<div align="right">
-<div style="margin-right: 10px;" class="m-icon-list">
-<br />
+      <label class="field">
+        <span class="field__label">昵称</span>
+        <input class="field__input" type="text" name="zc6"
+               placeholder="江湖上的名号，四字以内" required>
+        <span class="field__line" aria-hidden="true"></span>
+        <span class="field__note">四字以内</span>
+      </label>
 
-</div>
-</div>
-</div>
-<div class="g-mn">
-<div class="m-box">
-<div class="m-box-hd" style="margin-left: 3%;">
+      <label class="field">
+        <span class="field__label">账号</span>
+        <input class="field__input" type="text" name="zc1"
+               placeholder="六至十二位字母或数字" required autocomplete="username">
+        <span class="field__line" aria-hidden="true"></span>
+        <span class="field__note">6–12 位字母或数字</span>
+      </label>
 
+      <div class="field-row">
+        <label class="field">
+          <span class="field__label">密码</span>
+          <input class="field__input" type="password" name="zc2"
+                 placeholder="设置密码" required autocomplete="new-password">
+          <span class="field__line" aria-hidden="true"></span>
+          <span class="field__note">6–12 位字母或数字</span>
+        </label>
 
+        <label class="field">
+          <span class="field__label">确认密码</span>
+          <input class="field__input" type="password" name="zc3"
+                 placeholder="再输一次" required autocomplete="new-password">
+          <span class="field__line" aria-hidden="true"></span>
+          <span class="field__note">与上方一致</span>
+        </label>
+      </div>
 
-<div class="tt">
-<?echo $zcxx;?><br>
-35博客一站式通行证注册
-</div>
-</div>
-<div class="m-box-mn" style="padding: 5px 10px 0px 10px;">
+      <button class="gate__btn" type="submit" name="submit" value="注册">
+        <span>立 即 注 册</span>
+      </button>
 
+      <p class="gate__msg" role="alert"><?echo $zcxx;?></p>
+    </form>
 
+    <nav class="gate__nav">
+      <a href="login.php">已有通行证</a>
+      <span class="gate__dot">·</span>
+      <a href="../index.php">返回官网</a>
+    </nav>
+  </section>
 
-<form  action="<?echo "regist.php";?>" method="post">
-昵----称：&nbsp&nbsp&nbsp&nbsp<input  type="text" name="zc6" placeholder="昵称"id='search'><font color=red>（4个字符以下）</font><br>
-账----号：&nbsp&nbsp&nbsp&nbsp<input  type="text" name="zc1" placeholder="账号"id='search'><font color=red>（6-12位的字母或数字）</font><br>
-密----码：&nbsp&nbsp&nbsp&nbsp<input  type="text" name="zc2" placeholder="密码"id='search'><font color=red>（6-12位的字母或数字）</font><br>
-确认密码：&nbsp&nbsp<input  type="text" name="zc3"  placeholder="确认密码"id='search'><font color=red>（6-12位的字母或数字）</font><br>
-<!--[安全码]：&nbsp&nbsp&nbsp<input  type="text" name="zc4" placeholder="安全码"id='search'><font color=red>（6-12位的字母或数字）</font><br>-->
-<!--[注册码]：&nbsp&nbsp&nbsp<input  type="text" name="zc5" placeholder="注册码"id='search'><font color=red>（请向加QQ群54665469索要）</font><br>-->
-<input  type="submit" name="submit"  value="注册" id="search1" /><br>
-</form>
+  <footer class="gate__foot">
+    <span>官方群 54665469</span>
+    <span class="gate__dot">·</span>
+    <span>服务时间 09:30 - 21:00</span>
+  </footer>
 
+</main>
 
-<br>
-<a href='/xxjy/login.php'><font color=blue>返回登录</font></a>
-<br>
-<br>
-<br>
+<script>
+(function () {
+  /* 输入框聚焦效果 */
+  document.querySelectorAll('.field__input').forEach(function (inp) {
+    inp.addEventListener('focus', function () {
+      inp.parentNode.classList.add('is-focus');
+    });
+    inp.addEventListener('blur', function () {
+      inp.parentNode.classList.remove('is-focus');
+    });
+  });
 
+  /* 两次密码一致性预检（不拦截提交，只做提示） */
+  var p1 = document.querySelector('input[name=zc2]');
+  var p2 = document.querySelector('input[name=zc3]');
+  if (p1 && p2) {
+    p2.addEventListener('input', function () {
+      var ok = p2.value === '' || p2.value === p1.value;
+      p2.parentNode.classList.toggle('is-error', !ok);
+    });
+  }
+})();
+</script>
 
-
-
-
-
-<div class="article-content" style="font-size: 15px;margin-top: 10px;">
-
-</div>
-</div>
-</div>
-</div>
-<div class="g-ft f-cb">
-
-<div class="f-fr"><a href="../index.php" class="to-top">返回官网</a><br /></div>
-</div>
 </body>
 </html>
-
-
-
-

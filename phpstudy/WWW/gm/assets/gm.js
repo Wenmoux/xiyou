@@ -439,6 +439,53 @@
     if (j.banned) kv('封禁原因', j.banReason || '—');
     d.appendChild(dl);
 
+    // 装备列表（可删除）
+    var eqs = j.equips || [];
+    if (eqs.length) {
+      var eqBox = el('div', 'eqbox');
+      var eqHead = el('div', 'eqbox__head');
+      eqHead.appendChild(el('span', 'eqbox__t', '装备 ' + eqs.length + ' 件'));
+      eqBox.appendChild(eqHead);
+
+      var eqUl = el('ul', 'eqlist');
+      eqs.forEach(function (q) {
+        var li = el('li');
+
+        var nm = el('span', 'eqlist__n');
+        nm.appendChild(document.createTextNode(q.name));
+        var tag = el('span', 'eqlist__id', '#' + q.zbid);
+        nm.appendChild(tag);
+        if (q.star > 0) nm.appendChild(el('span', 'eqlist__star', '★' + q.star));
+        if (q.equipped) nm.appendChild(el('span', 'eqlist__on', '佩戴中'));
+        li.appendChild(nm);
+
+        var meta = el('span', 'eqlist__meta');
+        if (q.atk) meta.appendChild(el('span', null, '攻' + q.atk));
+        if (q.def) meta.appendChild(el('span', null, '防' + q.def));
+        meta.appendChild(el('span', null, 'Lv' + q.lv));
+        li.appendChild(meta);
+
+        var del = el('button', 'iconbtn iconbtn--danger', '×');
+        del.type = 'button';
+        del.title = '删除这件装备';
+        del.addEventListener('click', function () {
+          if (!confirm('删除「' + q.name + '」#' + q.zbid + '？')) return;
+          api('equips.remove', { wjid: p.wjid, id: q.id }).then(function () {
+            toast('已删除');
+            openPlayer(p.wjid);
+          }).catch(function (ex) { toast(ex.message, true); });
+        });
+        li.appendChild(del);
+
+        eqUl.appendChild(li);
+      });
+      eqBox.appendChild(eqUl);
+      d.appendChild(eqBox);
+    } else {
+      var hint = el('p', 'eqbox__empty', '暂无装备');
+      d.appendChild(hint);
+    }
+
     // 操作按钮
     var acts = el('div', 'drawer__actions');
 

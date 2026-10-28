@@ -246,6 +246,33 @@ switch ($action) {
         $mute = gm_ache_get($wid, '解除变量', '');
         $hasSave = $save !== null;
 
+        // 玩家装备（zb<wjid>）
+        $equipRows = array();
+        $zbTbl = 'zb' . $wid;
+        if (gm_val("show tables like '$zbTbl'")) {
+            $raw = gm_rows("select id, zbid, zbxj, zbpd from $zbTbl order by id asc limit 50");
+            $eqIdx = array();
+            $eqFile = GM_ROOT . '/data/equips.min.json';
+            if (is_file($eqFile)) {
+                $arr = json_decode(file_get_contents($eqFile), true);
+                if (is_array($arr)) foreach ($arr as $e) $eqIdx[$e['i']] = $e;
+            }
+            foreach ($raw as $r) {
+                $zid = (int)$r['zbid'];
+                $eq = isset($eqIdx[$zid]) ? $eqIdx[$zid] : array();
+                $equipRows[] = array(
+                    'id'     => (int)$r['id'],
+                    'zbid'   => $zid,
+                    'name'   => isset($eq['n']) ? $eq['n'] : ('装备#' . $zid),
+                    'star'   => (int)$r['zbxj'],
+                    'equipped' => (int)$r['zbpd'] === 1,
+                    'atk'    => isset($eq['atk']) ? $eq['atk'] : 0,
+                    'def'    => isset($eq['def']) ? $eq['def'] : 0,
+                    'lv'     => isset($eq['lv']) ? $eq['lv'] : 0,
+                );
+            }
+        }
+
         gm_json_ok(array(
             'player'    => $p,
             'money'     => (float)$money,
@@ -254,6 +281,7 @@ switch ($action) {
             'lastIp'    => $lastIp,
             'account'   => $acc,
             'bagCount'  => $bagCount,
+            'equips'    => $equipRows,
             'save'      => $hasSave ? array(
                 'exists'  => true,
                 'mtime'   => date('Y-m-d H:i:s', $save['mtime']),
