@@ -1807,3 +1807,319 @@ select.field__input option {
   color: var(--ink-500);
   white-space: nowrap;
 }
+
+
+/* ============================================================
+   CDK 兑换码
+   ============================================================ */
+.giftlist {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(232px, 1fr));
+  gap: var(--s3);
+}
+
+.gift {
+  padding: var(--s4);
+  background: var(--ink-100);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  transition: border-color var(--dur-1) var(--ease);
+}
+
+.gift:hover { border-color: var(--line-hi); }
+.gift.is-off { opacity: .52; }
+
+.gift__head {
+  display: flex;
+  align-items: center;
+  gap: var(--s2);
+  margin-bottom: var(--s2);
+}
+
+.gift__name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink-900);
+}
+
+.gift__tag {
+  padding: 1px 6px;
+  background: var(--ink-250);
+  border-radius: 99px;
+  font-size: 10px;
+  color: var(--ink-500);
+}
+
+.gift__remark {
+  margin: 0 0 var(--s2);
+  font-size: 12px;
+  color: var(--ink-500);
+  line-height: 1.5;
+}
+
+.gift__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+  margin-bottom: var(--s3);
+  font-size: 11.5px;
+  color: var(--ink-600);
+}
+
+.gift__meta span::before {
+  content: "·";
+  margin-right: 4px;
+  color: var(--ink-400);
+}
+
+.gift__meta span:first-child::before { content: ""; margin: 0; }
+
+.gift__acts {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding-top: var(--s3);
+  border-top: 1px solid var(--line);
+}
+
+/* 礼包编辑器 */
+.modal__box--wide { max-width: 620px; width: 92vw; }
+
+.gsec {
+  margin-bottom: var(--s4);
+  padding-top: var(--s3);
+  border-top: 1px solid var(--line);
+}
+
+.gsec__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--s2);
+  min-height: 26px;
+}
+
+.gsec__t {
+  font-size: 11px;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--ink-500);
+}
+
+.gpick { display: grid; gap: 4px; }
+
+.gpick__empty {
+  margin: 0;
+  padding: 10px 0;
+  font-size: 12px;
+  color: var(--ink-400);
+  text-align: center;
+}
+
+.gpick__row {
+  display: grid;
+  grid-template-columns: 54px 1fr 62px 26px;
+  align-items: center;
+  gap: var(--s2);
+  padding: 5px 8px;
+  background: var(--ink-100);
+  border-radius: var(--r-sm);
+  font-size: 12.5px;
+}
+
+.gpick__id {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--ink-500);
+}
+
+.gpick__n {
+  color: var(--ink-800);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.gpick__num {
+  width: 100%;
+  height: 26px;
+  padding: 0 6px;
+  background: var(--ink-050);
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--ink-900);
+  text-align: center;
+}
+
+/* 选择弹窗 */
+.modal--pick { z-index: 60; }
+.modal__box--pick { max-width: 520px; width: 92vw; max-height: 78vh; display: flex; flex-direction: column; }
+
+.pickbar {
+  padding: var(--s3) var(--s5);
+  border-bottom: 1px solid var(--line);
+}
+
+.picklist {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--s2) var(--s3) var(--s4);
+}
+
+.pickrow {
+  display: grid;
+  grid-template-columns: 64px 1fr;
+  align-items: center;
+  gap: var(--s2);
+  padding: 7px 10px;
+  border-radius: var(--r-sm);
+  cursor: pointer;
+  transition: background var(--dur-1) var(--ease);
+}
+
+.pickrow:hover { background: var(--ink-150); }
+
+.pickrow__id {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--ink-500);
+}
+
+.pickrow__mid { min-width: 0; }
+
+.pickrow__n {
+  display: block;
+  font-size: 13px;
+  color: var(--ink-900);
+}
+
+.pickrow__sub {
+  display: block;
+  font-size: 10.5px;
+  color: var(--ink-500);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 生成结果 */
+.genout {
+  margin-top: var(--s4);
+}
+
+.genout__t {
+  margin: 0 0 var(--s2);
+  font-size: 11.5px;
+  color: var(--ink-500);
+}
+
+.genout__ta {
+  width: 100%;
+  padding: var(--s3);
+  background: var(--ink-050);
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 1.7;
+  color: var(--ink-800);
+  resize: vertical;
+}
+
+.genout .btnrow { margin-top: var(--s2); }
+
+/* 兑换码 */
+.cdkcode {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--ink-800);
+  letter-spacing: .02em;
+  cursor: pointer;
+  padding: 2px 6px;
+  background: var(--ink-150);
+  border-radius: var(--r-sm);
+  transition: background var(--dur-1) var(--ease);
+}
+
+.cdkcode:hover { background: var(--ink-250); }
+
+.cdkdate {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--ink-600);
+  white-space: nowrap;
+}
+
+.badge--off {
+  background: var(--ink-250);
+  color: var(--ink-500);
+}
+
+.rowacts {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.btn--xs {
+  padding: 3px 8px;
+  font-size: 11px;
+}
+
+/* 统计条 */
+.stats--inline {
+  display: flex;
+  gap: var(--s5);
+}
+
+.stats--inline .stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  text-align: right;
+}
+
+.stats--inline .stat__v {
+  font-family: var(--font-mono);
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--ink-900);
+}
+
+.stats--inline .stat__k {
+  font-size: 10px;
+  color: var(--ink-500);
+}
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: var(--s2);
+}
+
+.field__input--sel {
+  height: 36px;
+  padding: 0 8px;
+  background: var(--ink-100);
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  color: var(--ink-900);
+}
+
+.field__input--search {
+  height: 30px;
+  padding: 0 10px;
+  font-size: 12.5px;
+  background: var(--ink-100);
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  min-width: 180px;
+}
+
+@media (max-width: 900px) {
+  .giftlist { grid-template-columns: 1fr; }
+  .stats--inline { gap: var(--s4); }
+  .stats--inline .stat__v { font-size: 15px; }
+}

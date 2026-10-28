@@ -95,6 +95,13 @@ $u = gm_user();
           </svg>
           <span>操作</span>
         </button>
+        <button class="nav__item" data-view="cdk">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+            <rect x="2.5" y="6" width="15" height="8.5" rx="1.5"/>
+            <path d="M7 6v8.5M13 6v8.5" stroke-dasharray="1.5 2" stroke-linecap="round"/>
+          </svg>
+          <span>兑换码</span>
+        </button>
       </nav>
 
       <button class="rail__out" id="logout" title="退出登录">
@@ -444,6 +451,112 @@ $u = gm_user();
           </article>
         </section>
 
+
+      <!-- ===== 兑换码 ===== -->
+      <section class="view" data-view="cdk">
+        <header class="view__head">
+          <div>
+            <p class="eyebrow">Redemption</p>
+            <h2>兑换码</h2>
+          </div>
+          <div class="stats stats--inline" id="cdkStats">
+            <div class="stat"><span class="stat__v" data-cdk="gifts">—</span><span class="stat__k">礼包</span></div>
+            <div class="stat"><span class="stat__v" data-cdk="codes">—</span><span class="stat__k">兑换码</span></div>
+            <div class="stat"><span class="stat__v" data-cdk="used">—</span><span class="stat__k">已兑换</span></div>
+          </div>
+        </header>
+
+        <div class="panels">
+
+          <!-- 礼包管理 -->
+          <article class="panel panel--wide">
+            <header class="panel__head">
+              <h3>礼包</h3>
+              <button class="btn btn--sm btn--primary" type="button" id="newGift">＋ 新建礼包</button>
+            </header>
+            <div class="giftlist" id="giftList">
+              <p class="empty">加载中…</p>
+            </div>
+          </article>
+
+          <!-- 生成兑换码 -->
+          <article class="panel">
+            <header class="panel__head"><h3>生成兑换码</h3></header>
+            <p class="panel__note">
+              选礼包 → 设时光 → 批量出码。字符集去掉了 0/O/1/I，玩家手输不易错。
+            </p>
+            <form class="form" id="genForm">
+              <label class="field">
+                <span class="field__label">礼包</span>
+                <select class="field__input field__input--sel" name="gift_id" id="genGift" required>
+                  <option value="">请选择</option>
+                </select>
+              </label>
+              <div class="grid2">
+                <label class="field">
+                  <span class="field__label">数量</span>
+                  <input class="field__input" name="count" type="number" value="10" min="1" max="5000">
+                </label>
+                <label class="field">
+                  <span class="field__label">前缀</span>
+                  <input class="field__input" name="prefix" placeholder="如 VIP" maxlength="8">
+                </label>
+              </div>
+              <div class="grid2">
+                <label class="field">
+                  <span class="field__label">生效时间</span>
+                  <input class="field__input" name="start_at" type="datetime-local">
+                </label>
+                <label class="field">
+                  <span class="field__label">失效时间</span>
+                  <input class="field__input" name="end_at" type="datetime-local">
+                </label>
+              </div>
+              <label class="field">
+                <span class="field__label">总量上限（0 = 不限）</span>
+                <input class="field__input" name="limit_total" type="number" value="0" min="0">
+              </label>
+              <button class="btn btn--primary" type="submit">生成</button>
+            </form>
+            <div class="genout" id="genOut"></div>
+          </article>
+
+        </div>
+
+        <!-- 兑换码列表 -->
+        <article class="panel panel--wide" style="margin-top:var(--s5)">
+          <header class="panel__head">
+            <h3>兑换码</h3>
+            <div class="toolbar">
+              <input class="field__input field__input--search" id="cdkSearch" placeholder="搜索兑换码" type="search">
+              <button class="btn btn--sm" type="button" id="cdkRefresh">刷新</button>
+            </div>
+          </header>
+          <div class="tablewrap">
+            <table class="tbl">
+              <thead>
+                <tr><th>兑换码</th><th>礼包</th><th>有效期</th><th>用量</th><th>状态</th><th></th></tr>
+              </thead>
+              <tbody id="cdkRows"><tr><td colspan="6" class="empty">加载中…</td></tr></tbody>
+            </table>
+          </div>
+        </article>
+
+        <!-- 兑换记录 -->
+        <article class="panel panel--wide" style="margin-top:var(--s5)">
+          <header class="panel__head">
+            <h3>兑换记录</h3>
+            <button class="btn btn--sm" type="button" id="logRefresh">刷新</button>
+          </header>
+          <div class="tablewrap">
+            <table class="tbl">
+              <thead><tr><th>时间</th><th>兑换码</th><th>礼包</th><th>玩家</th><th>IP</th></tr></thead>
+              <tbody id="cdkLogs"><tr><td colspan="5" class="empty">加载中…</td></tr></tbody>
+            </table>
+          </div>
+        </article>
+
+      </section>
     </main>
   </div>
 

@@ -265,3 +265,110 @@ a:hover { text-decoration: underline; }
   .row-2 { flex-direction: column; gap: 0; }
   .row-2 .lb { flex: 0 0 52px; }
 }
+
+/* ============================================================
+   CDK 兑换页
+   ============================================================ */
+
+.who {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  margin-bottom: 16px;
+  background: #f4f8fc;
+  border: 1px solid var(--line-2);
+  border-radius: var(--r-sm);
+  font-size: 13px;
+}
+
+.who__lb { color: var(--ink-3); font-size: 12px; }
+
+.who__nick {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.who__id {
+  margin-left: auto;
+  font-family: Consolas, Menlo, monospace;
+  font-size: 11px;
+  color: var(--ink-3);
+}
+
+/* 提示条 */
+.notice {
+  padding: 10px 14px;
+  margin-bottom: 14px;
+  border-radius: var(--r-sm);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.notice--ok {
+  background: #eaf7ef;
+  border: 1px solid #b8e0c6;
+  color: #1e7a44;
+}
+
+.notice--err {
+  background: #fdf0ef;
+  border: 1px solid #f2c4c0;
+  color: var(--red);
+}
+/* 礼包内容清单 */
+.bag {
+  margin-bottom: 16px;
+  border: 1px solid var(--line-2);
+  border-radius: var(--r-sm);
+  overflow: hidden;
+}
+
+.bag__hd {
+  padding: 8px 12px;
+  background: #f6f9fc;
+  border-bottom: 1px solid var(--line-2);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink-2);
+}
+
+.bag__list {
+  margin: 0;
+  padding: 6px 12px;
+  list-style: none;
+}
+
+.bag__list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 0;
+  border-bottom: 1px dashed var(--line-2);
+  font-size: 13px;
+}
+
+.bag__list li:last-child { border-bottom: 0; }
+
+.bag__n { color: var(--ink-2); }
+
+.bag__v {
+  color: var(--blue);
+  font-weight: 600;
+  font-family: Consolas, Menlo, monospace;
+  font-size: 12px;
+}
+
+.bag__tip {
+  margin: 0;
+  padding: 8px 12px;
+  background: #fafcfd;
+  border-top: 1px solid var(--line-2);
+  font-size: 11.5px;
+  color: var(--ink-3);
+}
+
+@media (max-width: 460px) {
+  .notice { font-size: 12.5px; }
+  .bag__list li { font-size: 12.5px; }
+}

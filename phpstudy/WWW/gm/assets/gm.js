@@ -1512,6 +1512,683 @@
   /* ============================================================
      启动
      ============================================================ */
+
+  /* ============================================================
+     兑换码
+     ============================================================ */
+  var cdkGifts = [];
+  var cdkItems = [];   // 已选的物品
+  var cdkEquips = [];  // 已选的装备
+  var cdkMoney  = 0;
+  var cdkGold   = 0;
+
+  function bindCdk() {
+    var view = document.querySelector('.view[data-view="cdk"]');
+    if (!view) return;
+
+    var giftList = $('#giftList');
+    var genForm  = $('#genForm');
+    var genGift  = $('#genGift');
+    var genOut   = $('#genOut');
+    var cdkRows  = $('#cdkRows');
+    var cdkLogs  = $('#cdkLogs');
+
+    // ---------- 统计 ----------
+    function loadStats() {
+      api('cdk.stats').then(function (j) {
+        Object.keys(j).forEach(function (k) {
+          var n = view.querySelector('[data-cdk="' + k + '"]');
+          if (n) n.textContent = fmt.num(j[k]);
+        });
+      }).catch(function () {});
+    }
+
+    // ---------- 礼包列表 ----------
+    function loadGifts() {
+      api('cdk.gifts').then(function (j) {
+        cdkGifts = j.rows || [];
+        renderGifts();
+        renderGiftOptions();
+      }).catch(function (ex) {
+        giftList.innerHTML = '';
+        giftList.appendChild(el('p', 'empty', ex.message));
+      });
+    }
+
+    function renderGifts() {
+      giftList.innerHTML = '';
+      if (!cdkGifts.length) {
+        giftList.appendChild(el('p', 'empty', '还没有礼包，点右上角新建'));
+        return;
+      }
+
+      cdkGifts.forEach(function (g) {
+        var card = el('div', 'gift' + (g.status ? '' : ' is-off'));
+
+        var head = el('div', 'gift__head');
+        head.appendChild(el('span', 'gift__name', g.name));
+        if (!g.status) head.appendChild(el('span', 'gift__tag', '已下架'));
+        card.appendChild(head);
+
+        if (g.remark) card.appendChild(el('p', 'gift__remark', g.remark));
+
+        var meta = el('div', 'gift__meta');
+        if (g.items)  meta.appendChild(el('span', null, g.items + ' 种物品'));
+        if (g.equips) meta.appendChild(el('span', null, g.equips + ' 件装备'));
+        if (g.money)  meta.appendChild(el('span', null, '银两 ' + fmt.money(g.money)));
+        if (g.gold)   meta.appendChild(el('span', null, '元宝 ' + fmt.num(g.gold)));
+        card.appendChild(meta);
+
+        var acts = el('div', 'gift__acts');
+
+        var bEdit = el('button', 'btn btn--sm', '编辑');
+        bEdit.type = 'button';
+        bEdit.addEventListener('click', function () { openGiftEditor(g); });
+        acts.appendChild(bEdit);
+
+        var bUse = el('button', 'btn btn--sm btn--primary', '生成码');
+        bUse.type = 'button';
+        bUse.addEventListener('click', function () {
+          genGift.value = String(g.id);
+          genGift.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          genGift.focus();
+        });
+        acts.appendChild(bUse);
+
+        var bOff = el('button', 'btn btn--sm', g.status ? '下架' : '上架');
+        bOff.type = 'button';
+        bOff.addEventListener('click', function () {
+          api('cdk.giftToggle', { id: g.id }).then(loadGifts)
+             .catch(function (ex) { toast(ex.message, true); });
+        });
+        acts.appendChild(bOff);
+
+        var bDel = el('button', 'iconbtn iconbtn--danger', '×');
+        bDel.type = 'button';
+        bDel.title = '删除礼包';
+        bDel.addEventListener('click', function () {
+          if (!confirm('删除礼包「' + g.name + '」？')) return;
+          api('cdk.giftDelete', { id: g.id }).then(function () {
+            toast('已删除'); loadGifts(); loadStats();
+          }).catch(function (ex) { toast(ex.message, true); });
+        });
+        acts.appendChild(bDel);
+
+        card.appendChild(acts);
+        giftList.appendChild(card);
+      });
+    }
+
+    function renderGiftOptions() {
+      var cur = genGift.value;
+      genGift.innerHTML = '<option value="">请选择</option>';
+      cdkGifts.forEach(function (g) {
+        if (!g.status) return;
+        var o = document.createElement('option');
+        o.value = g.id;
+        o.textContent = g.name;
+        genGift.appendChild(o);
+      });
+      if (cur) genGift.value = cur;
+    }
+    // ---------- 礼包编辑器 ----------
+    var editorRepaint = null;   // openGiftEditor 注册的重绘函数
+
+    function openGiftEditor(gift) {
+      var isNew = !gift;
+      var g = gift || {};
+
+      cdkItems = [];
+      cdkEquips = [];
+      cdkMoney  = g.money || 0;
+      cdkGold   = g.gold || 0;
+
+      var mask = el('div', 'modal');
+      var box = el('div', 'modal__box modal__box--wide');
+
+      var head = el('div', 'modal__head');
+      head.appendChild(el('h3', null, isNew ? '新建礼包' : '编辑礼包'));
+      var x = el('button', 'modal__x', '×');
+      x.type = 'button';
+      x.addEventListener('click', function () { close(); });
+      head.appendChild(x);
+      box.appendChild(head);
+
+      var body = el('div', 'modal__body');
+      box.appendChild(body);
+
+      var foot = el('div', 'modal__foot');
+      box.appendChild(foot);
+
+      function close() {
+        mask.remove();
+        editorRepaint = null;
+      }
+
+      // 顶部固定字段
+      var f1 = el('label', 'field');
+      f1.appendChild(el('span', 'field__label', '礼包名称'));
+      var nameIn = el('input', 'field__input');
+      nameIn.type = 'text';
+      nameIn.value = g.name || '';
+      nameIn.placeholder = '如 新手礼包、中秋福利';
+      f1.appendChild(nameIn);
+      body.appendChild(f1);
+
+      var f2 = el('label', 'field');
+      f2.appendChild(el('span', 'field__label', '备注（仅后台可见）'));
+      var rmIn = el('input', 'field__input');
+      rmIn.type = 'text';
+      rmIn.value = g.remark || '';
+      rmIn.placeholder = '选填';
+      f2.appendChild(rmIn);
+      body.appendChild(f2);
+
+      var fp = el('label', 'field');
+      fp.appendChild(el('span', 'field__label', '每人限领次数（0 = 不限）'));
+      var perIn = el('input', 'field__input');
+      perIn.type = 'number';
+      perIn.min = 0;
+      perIn.value = (g.per_player === undefined ? 1 : g.per_player);
+      fp.appendChild(perIn);
+      body.appendChild(fp);
+
+      // 动态区
+      var dyn = el('div');
+      body.appendChild(dyn);
+
+      function secHead(title, btnText, onAdd) {
+        var h = el('div', 'gsec__head');
+        h.appendChild(el('span', 'gsec__t', title));
+        if (btnText) {
+          var b2 = el('button', 'btn btn--sm', btnText);
+          b2.type = 'button';
+          b2.addEventListener('click', onAdd);
+          h.appendChild(b2);
+        }
+        return h;
+      }
+
+      function paintDynamic() {
+        dyn.innerHTML = '';
+
+        // 物品
+        var s1 = el('div', 'gsec');
+        s1.appendChild(secHead('物品', '＋ 添加物品', pickItem));
+        var w1 = el('div', 'gpick');
+        if (!cdkItems.length) {
+          w1.appendChild(el('p', 'gpick__empty', '未添加物品'));
+        } else {
+          cdkItems.forEach(function (it, idx) {
+            var row = el('div', 'gpick__row');
+            row.appendChild(el('span', 'gpick__id', '#' + it.id));
+            row.appendChild(el('span', 'gpick__n', it.name || '物品'));
+            var num = el('input', 'gpick__num');
+            num.type = 'number';
+            num.min = 1;
+            num.value = it.num || 1;
+            num.title = '数量';
+            num.addEventListener('input', function () {
+              cdkItems[idx].num = parseInt(num.value, 10) || 1;
+            });
+            row.appendChild(num);
+            var rm = el('button', 'iconbtn iconbtn--danger', '×');
+            rm.type = 'button';
+            rm.addEventListener('click', function () {
+              cdkItems.splice(idx, 1);
+              paintDynamic();
+            });
+            row.appendChild(rm);
+            w1.appendChild(row);
+          });
+        }
+        s1.appendChild(w1);
+        dyn.appendChild(s1);
+
+        // 装备
+        var s2 = el('div', 'gsec');
+        s2.appendChild(secHead('装备', '＋ 添加装备', pickEquip));
+        var w2 = el('div', 'gpick');
+        if (!cdkEquips.length) {
+          w2.appendChild(el('p', 'gpick__empty', '未添加装备'));
+        } else {
+          cdkEquips.forEach(function (eq, idx) {
+            var row = el('div', 'gpick__row');
+            row.appendChild(el('span', 'gpick__id', '#' + eq.id));
+            row.appendChild(el('span', 'gpick__n', eq.name || '装备'));
+            var star = el('input', 'gpick__num');
+            star.type = 'number';
+            star.min = 0;
+            star.max = 15;
+            star.value = eq.star || 0;
+            star.title = '星级 0-15';
+            star.addEventListener('input', function () {
+              cdkEquips[idx].star = Math.max(0, Math.min(15, parseInt(star.value, 10) || 0));
+            });
+            row.appendChild(star);
+            var rm2 = el('button', 'iconbtn iconbtn--danger', '×');
+            rm2.type = 'button';
+            rm2.addEventListener('click', function () {
+              cdkEquips.splice(idx, 1);
+              paintDynamic();
+            });
+            row.appendChild(rm2);
+            w2.appendChild(row);
+          });
+        }
+        s2.appendChild(w2);
+        dyn.appendChild(s2);
+
+        // 附加
+        var s3 = el('div', 'gsec');
+        s3.appendChild(secHead('附加', null, null));
+        var gr = el('div', 'grid2');
+
+        var fm = el('label', 'field');
+        fm.appendChild(el('span', 'field__label', '银两'));
+        var moneyIn = el('input', 'field__input');
+        moneyIn.type = 'number';
+        moneyIn.min = 0;
+        moneyIn.value = cdkMoney;
+        moneyIn.addEventListener('input', function () {
+          cdkMoney = parseInt(moneyIn.value, 10) || 0;
+        });
+        fm.appendChild(moneyIn);
+        gr.appendChild(fm);
+
+        var fg = el('label', 'field');
+        fg.appendChild(el('span', 'field__label', '元宝'));
+        var goldIn = el('input', 'field__input');
+        goldIn.type = 'number';
+        goldIn.min = 0;
+        goldIn.value = cdkGold;
+        goldIn.addEventListener('input', function () {
+          cdkGold = parseInt(goldIn.value, 10) || 0;
+        });
+        fg.appendChild(goldIn);
+        gr.appendChild(fg);
+
+        s3.appendChild(gr);
+        dyn.appendChild(s3);
+      }
+
+      editorRepaint = paintDynamic;
+
+      // 底部
+      var cancel = el('button', 'btn', '取消');
+      cancel.type = 'button';
+      cancel.addEventListener('click', close);
+      foot.appendChild(cancel);
+
+      var save = el('button', 'btn btn--primary', '保存');
+      save.type = 'button';
+      save.addEventListener('click', function () {
+        var name = nameIn.value.trim();
+        if (!name) { toast('请填写礼包名称', true); nameIn.focus(); return; }
+
+        busy(save, true);
+        api('cdk.giftSave', {
+          id: g.id || 0,
+          name: name,
+          remark: rmIn.value.trim(),
+          per_player: parseInt(perIn.value, 10) || 0,
+          items: JSON.stringify(cdkItems.map(function (i) { return { id: i.id, num: i.num }; })),
+          equips: JSON.stringify(cdkEquips.map(function (e) { return { id: e.id, star: e.star }; })),
+          money: cdkMoney,
+          gold: cdkGold
+        }).then(function () {
+          toast('已保存');
+          close();
+          loadGifts();
+          loadStats();
+        }).catch(function (ex) {
+          toast(ex.message, true);
+          busy(save, false);
+        });
+      });
+      foot.appendChild(save);
+
+      paintDynamic();
+      mask.appendChild(box);
+      document.body.appendChild(mask);
+      setTimeout(function () { nameIn.focus(); }, 100);
+
+      // 编辑已有礼包：拉详情
+      if (g.id) {
+        api('cdk.giftDetail', { id: g.id }).then(function (j) {
+          cdkItems = (j.items || []).map(function (i) { return { id: i.id, name: i.name || ('物品#' + i.id), num: i.num }; });
+          cdkEquips = (j.equips || []).map(function (e) { return { id: e.id, name: e.name || ('装备#' + e.id), star: e.star }; });
+          cdkMoney = j.money || 0;
+          cdkGold = j.gold || 0;
+          paintDynamic();
+        }).catch(function () {});
+      }
+    }
+
+    // ---------- 轻量选择器（礼包编辑用） ----------
+    function pickItem() {
+      loadItems().then(function (list) {
+        showPicker('选择物品', list, function (it) {
+          return { id: it.i, name: it.n, sub: it.d ? it.d.slice(0, 18) : '' };
+        }, function (it) {
+          if (cdkItems.some(function (x) { return x.id === it.i; })) {
+            toast('已经添加过了', true);
+            return;
+          }
+          cdkItems.push({ id: it.i, name: it.n, num: 1 });
+          refreshEditor();
+        }, function (kw) {
+          var k = kw.toLowerCase();
+          return list.filter(function (it) {
+            return !k || String(it.i).indexOf(k) !== -1 || (it.n || '').toLowerCase().indexOf(k) !== -1;
+          });
+        });
+      }).catch(function (ex) { toast(ex.message, true); });
+    }
+
+    function pickEquip() {
+      loadEquips().then(function (list) {
+        showPicker('选择装备', list, function (eq) {
+          return { id: eq.i, name: eq.n, sub: (eq.cat !== undefined ? eq.cat + ' · ' : '') + 'Lv' + eq.lv };
+        }, function (eq) {
+          if (cdkEquips.some(function (x) { return x.id === eq.i; })) {
+            toast('已经添加过了', true);
+            return;
+          }
+          cdkEquips.push({ id: eq.i, name: eq.n, star: 0 });
+          refreshEditor();
+        }, function (kw) {
+          var k = kw.toLowerCase();
+          return list.filter(function (eq) {
+            return !k || String(eq.i).indexOf(k) !== -1 || (eq.n || '').toLowerCase().indexOf(k) !== -1;
+          });
+        });
+      }).catch(function (ex) { toast(ex.message, true); });
+    }
+
+    /* 通用选择弹窗 */
+    function showPicker(title, data, mapFn, onPick, filterFn) {
+      var mask = el('div', 'modal modal--pick');
+      var box = el('div', 'modal__box modal__box--pick');
+
+      var head = el('div', 'modal__head');
+      head.appendChild(el('h3', null, title));
+      var x = el('button', 'modal__x', '×');
+      x.type = 'button';
+      x.addEventListener('click', function () { mask.remove(); });
+      head.appendChild(x);
+      box.appendChild(head);
+
+      var bar = el('div', 'pickbar');
+      var inp = el('input', 'field__input field__input--search');
+      inp.type = 'search';
+      inp.placeholder = '搜名称或 ID';
+      bar.appendChild(inp);
+      box.appendChild(bar);
+
+      var list = el('div', 'picklist');
+      box.appendChild(list);
+
+      function draw(kw) {
+        list.innerHTML = '';
+        var arr = filterFn(kw || '').slice(0, 200);
+        if (!arr.length) {
+          list.appendChild(el('p', 'empty', '没有匹配项'));
+          return;
+        }
+        arr.forEach(function (raw) {
+          var m = mapFn(raw);
+          var row = el('div', 'pickrow');
+          row.appendChild(el('span', 'pickrow__id', '#' + m.id));
+          var mid = el('div', 'pickrow__mid');
+          mid.appendChild(el('span', 'pickrow__n', m.name));
+          if (m.sub) mid.appendChild(el('span', 'pickrow__sub', m.sub));
+          row.appendChild(mid);
+          row.addEventListener('click', function () {
+            onPick(raw);
+            mask.remove();
+          });
+          list.appendChild(row);
+        });
+      }
+
+      draw('');
+      var t = null;
+      inp.addEventListener('input', function (e) {
+        clearTimeout(t);
+        var v = e.target.value;
+        t = setTimeout(function () { draw(v); }, 200);
+      });
+
+      mask.appendChild(box);
+      document.body.appendChild(mask);
+      setTimeout(function () { inp.focus(); }, 100);
+    }
+
+    /* 重绘编辑器里的物品/装备区域，不关闭弹窗 */
+    function refreshEditor() {
+      if (typeof editorRepaint === 'function') editorRepaint();
+    }
+
+    // ---------- 生成兑换码 ----------
+    genForm.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var fd = new FormData(genForm);
+      var giftId = fd.get('gift_id');
+      if (!giftId) { toast('请先选择礼包', true); return; }
+
+      var btn = genForm.querySelector('button[type=submit]');
+      busy(btn, true);
+
+      var payload = {
+        gift_id: giftId,
+        count: fd.get('count') || 10,
+        prefix: fd.get('prefix') || '',
+        start_at: fd.get('start_at') || '',
+        end_at: fd.get('end_at') || '',
+        limit_total: fd.get('limit_total') || 0
+      };
+
+      api('cdk.generate', payload).then(function (j) {
+        busy(btn, false);
+        toast('已生成 ' + j.count + ' 个');
+
+        genOut.innerHTML = '';
+        genOut.appendChild(el('p', 'genout__t', '本次生成（' + j.batch + '）'));
+
+        var ta = document.createElement('textarea');
+        ta.className = 'genout__ta';
+        ta.rows = Math.min(10, Math.max(3, j.count));
+        ta.readOnly = true;
+        ta.value = (j.codes || []).join('\n');
+        genOut.appendChild(ta);
+
+        var row = el('div', 'btnrow');
+        var cp = el('button', 'btn btn--sm btn--primary', '复制全部');
+        cp.type = 'button';
+        cp.addEventListener('click', function () {
+          ta.select();
+          try { document.execCommand('copy'); toast('已复制 ' + j.count + ' 个码'); }
+          catch (err) { toast('请手动复制', true); }
+        });
+        row.appendChild(cp);
+
+        var dl = el('button', 'btn btn--sm', '下载 txt');
+        dl.type = 'button';
+        dl.addEventListener('click', function () {
+          var blob = new Blob([(j.codes || []).join('\r\n')], { type: 'text/plain;charset=utf-8' });
+          var a = document.createElement('a');
+          a.href = URL.createObjectURL(blob);
+          a.download = 'cdk-' + j.batch + '.txt';
+          a.click();
+          URL.revokeObjectURL(a.href);
+        });
+        row.appendChild(dl);
+        genOut.appendChild(row);
+
+        loadCodes();
+        loadStats();
+      }).catch(function (ex) {
+        busy(btn, false);
+        toast(ex.message, true);
+      });
+    });
+    // ---------- 兑换码列表 ----------
+    function loadCodes(kw) {
+      api('cdk.list', { q: kw || '' }).then(function (j) {
+        cdkRows.innerHTML = '';
+        var rows = j.rows || [];
+        if (!rows.length) {
+          var tr = el('tr');
+          var td = el('td', 'empty', kw ? '没有匹配的兑换码' : '还没有生成兑换码');
+          td.colSpan = 6;
+          tr.appendChild(td);
+          cdkRows.appendChild(tr);
+          return;
+        }
+
+        rows.forEach(function (r) {
+          var tr = el('tr');
+
+          // 码
+          var td1 = el('td');
+          var code = el('span', 'cdkcode', r.code);
+          code.title = '点击复制';
+          code.addEventListener('click', function () {
+            var ta = document.createElement('textarea');
+            ta.value = r.code;
+            document.body.appendChild(ta);
+            ta.select();
+            try { document.execCommand('copy'); toast('已复制'); } catch (e) {}
+            ta.remove();
+          });
+          td1.appendChild(code);
+          tr.appendChild(td1);
+
+          tr.appendChild(el('td', null, r.gift_name || '—'));
+
+          // 有效期
+          var td3 = el('td', 'cdkdate');
+          if (r.start_at || r.end_at) {
+            td3.textContent = (r.start_at ? r.start_at.slice(0, 16) : '不限')
+                          + ' → ' + (r.end_at ? r.end_at.slice(0, 16) : '不限');
+          } else {
+            td3.textContent = '长期有效';
+          }
+          tr.appendChild(td3);
+
+          // 用量
+          var used = r.limit_total > 0
+            ? r.used + ' / ' + r.limit_total
+            : r.used + ' 次';
+          tr.appendChild(el('td', 'num', used));
+
+          // 状态
+          var td5 = el('td');
+          var badge = el('span', 'badge' + (r.status ? '' : ' badge--off'),
+                             r.status ? '可用' : '停用');
+          td5.appendChild(badge);
+          tr.appendChild(td5);
+
+          // 操作
+          var td6 = el('td');
+          var acts = el('div', 'rowacts');
+
+          var bT = el('button', 'btn btn--xs', r.status ? '停用' : '启用');
+          bT.type = 'button';
+          bT.addEventListener('click', function () {
+            api('cdk.toggle', { id: r.id }).then(function () { loadCodes(kw); })
+               .catch(function (ex) { toast(ex.message, true); });
+          });
+          acts.appendChild(bT);
+
+          var bD = el('button', 'iconbtn iconbtn--danger', '×');
+          bD.type = 'button';
+          bD.title = '删除这个码';
+          bD.addEventListener('click', function () {
+            if (!confirm('删除兑换码 ' + r.code + '？' + (r.used ? '（已被用过 ' + r.used + ' 次）' : ''))) return;
+            api('cdk.delete', { id: r.id }).then(function () {
+              toast('已删除');
+              loadCodes(kw);
+              loadStats();
+            }).catch(function (ex) { toast(ex.message, true); });
+          });
+          acts.appendChild(bD);
+
+          td6.appendChild(acts);
+          tr.appendChild(td6);
+          cdkRows.appendChild(tr);
+        });
+      }).catch(function (ex) {
+        cdkRows.innerHTML = '';
+        var tr = el('tr');
+        var td = el('td', 'empty', ex.message);
+        td.colSpan = 6;
+        tr.appendChild(td);
+        cdkRows.appendChild(tr);
+      });
+    }
+
+    // ---------- 兑换记录 ----------
+    function loadLogs() {
+      api('cdk.logs').then(function (j) {
+        cdkLogs.innerHTML = '';
+        var rows = j.rows || [];
+        if (!rows.length) {
+          var tr = el('tr');
+          var td = el('td', 'empty', '还没有人兑换');
+          td.colSpan = 5;
+          tr.appendChild(td);
+          cdkLogs.appendChild(tr);
+          return;
+        }
+        rows.forEach(function (r) {
+          var tr = el('tr');
+          tr.appendChild(el('td', 'cdkdate', (r.created_at || '').slice(0, 16)));
+          tr.appendChild(el('td', 'cdkcode', r.code));
+          tr.appendChild(el('td', null, r.gift_name || '—'));
+
+          var td = el('td');
+          td.appendChild(el('span', 'pname__nick', r.nick || '—'));
+          td.appendChild(el('span', 'pname__wid', '#' + r.wjid));
+          tr.appendChild(td);
+
+          tr.appendChild(el('td', 'num', r.ip || '—'));
+          cdkLogs.appendChild(tr);
+        });
+      }).catch(function (ex) {
+        cdkLogs.innerHTML = '';
+        var tr = el('tr');
+        var td = el('td', 'empty', ex.message);
+        td.colSpan = 5;
+        tr.appendChild(td);
+        cdkLogs.appendChild(tr);
+      });
+    }
+
+    // ---------- 绑定 ----------
+    $('#newGift').addEventListener('click', function () { openGiftEditor(null); });
+    $('#cdkRefresh').addEventListener('click', function () { loadCodes($('#cdkSearch').value.trim()); });
+    $('#logRefresh').addEventListener('click', loadLogs);
+
+    var searchTimer = null;
+    $('#cdkSearch').addEventListener('input', function (e) {
+      clearTimeout(searchTimer);
+      var v = e.target.value.trim();
+      searchTimer = setTimeout(function () { loadCodes(v); }, 300);
+    });
+
+    // 首次进入才加载
+    var cdkLoaded = false;
+    document.querySelector('.nav__item[data-view="cdk"]').addEventListener('click', function () {
+      loadStats();
+      loadGifts();
+      loadCodes('');
+      loadLogs();
+      cdkLoaded = true;
+    });
+  }
+
   function boot() {
     if (booted) {
       loadOverview();
@@ -1529,6 +2206,7 @@
       ['装备', bindEquipPicker],
       ['GM账号', bindGmAccounts],
       ['消息', bindMessages],
+      ['兑换码', bindCdk],
       ['退出', bindLogout]
     ].forEach(function (item) {
       try {

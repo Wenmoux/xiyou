@@ -6,6 +6,7 @@
 
 require_once __DIR__ . '/lib/db.php';
 require_once __DIR__ . '/lib/auth.php';
+require_once __DIR__ . '/lib/cdk.php';
 
 header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store');
@@ -1083,5 +1084,10 @@ switch ($action) {
         break;
 
     default:
+        // CDK 相关动作统一交给独立文件处理
+        if (strpos($action, 'cdk.') === 0) {
+            require __DIR__ . '/lib/cdk_api.php';
+            exit;
+        }
         gm_json_error('未知操作: ' . $action, 404);
 }
