@@ -43,6 +43,17 @@
   --surface-3: var(--ink-150);
   --line: rgba(255, 255, 255, .07);
   --line-strong: rgba(255, 255, 255, .12);
+
+  /* 微分隔线 / 悬停底色：深色下是极淡的白，浅色下要反过来 */
+  --hairline: rgba(255, 255, 255, .04);
+  --hairline-soft: rgba(255, 255, 255, .03);
+  --hover-wash: rgba(255, 255, 255, .03);
+  --hover-wash-2: rgba(255, 255, 255, .035);
+  --inset-hi: rgba(255, 255, 255, .12);
+  --inset-hi-2: rgba(255, 255, 255, .16);
+  --inset-hi-3: rgba(255, 255, 255, .06);
+  --ring-strong: rgba(255, 255, 255, .3);
+  --overlay: rgba(4, 3, 6, .72);
   --fg: var(--ink-900);
   --fg-muted: var(--ink-600);
   --fg-dim: var(--ink-500);
@@ -75,6 +86,76 @@
   --shadow-2: 0 8px 24px -8px rgba(0, 0, 0, .6);
   --shadow-3: 0 24px 64px -16px rgba(0, 0, 0, .7);
 }
+
+/* ============================================================
+   浅色主题：宣纸
+   ------------------------------------------------------------
+   深色是「夜里的砚台」，浅色是「摊开的宣纸」。
+   墨色阶整体反转，朱砂保持同一色相但压低明度以免刺眼。
+   切换方式：<html data-theme="light">
+   ============================================================ */
+[data-theme="light"] {
+  --ink-000: #f7f5f1;
+  --ink-050: #fbfaf7;
+  --ink-100: #ffffff;
+  --ink-150: #f4f2ee;
+  --ink-200: #ebe8e2;
+  --ink-300: #d9d5cd;
+  --ink-400: #b5afa5;
+  --ink-500: #8a8478;
+  --ink-600: #6b655b;
+  --ink-700: #524d45;
+  --ink-800: #38342e;
+  --ink-900: #1c1a17;
+
+  --cinnabar: #cf3f31;
+  --cinnabar-dim: #a83227;
+  --cinnabar-glow: rgba(207, 63, 49, .16);
+
+  --jade: #3d8b6e;
+  --jade-glow: rgba(61, 139, 110, .14);
+
+  --amber: #b87d20;
+
+  --bg: var(--ink-000);
+  --surface: var(--ink-050);
+  --surface-2: var(--ink-100);
+  --surface-3: var(--ink-150);
+  --line: rgba(28, 26, 23, .09);
+  --line-strong: rgba(28, 26, 23, .16);
+
+  --hairline: rgba(28, 26, 23, .06);
+  --hairline-soft: rgba(28, 26, 23, .04);
+  --hover-wash: rgba(28, 26, 23, .035);
+  --hover-wash-2: rgba(28, 26, 23, .045);
+  --inset-hi: rgba(255, 255, 255, .9);
+  --inset-hi-2: rgba(255, 255, 255, 1);
+  --inset-hi-3: rgba(255, 255, 255, .8);
+  --ring-strong: rgba(28, 26, 23, .26);
+  --overlay: rgba(28, 26, 23, .38);
+
+  --fg: var(--ink-900);
+  --fg-muted: var(--ink-600);
+  --fg-dim: var(--ink-500);
+
+  /* 阴影在浅色下要更柔、更短 */
+  --shadow-1: 0 1px 2px rgba(60, 50, 40, .08);
+  --shadow-2: 0 6px 18px -6px rgba(60, 50, 40, .14);
+  --shadow-3: 0 20px 50px -16px rgba(60, 50, 40, .2);
+}
+
+/* 浅色下卡片/弹窗的立体感靠边框和轻阴影，不靠发光 */
+[data-theme="light"] .modal__box {
+  box-shadow:
+    0 1px 0 var(--inset-hi) inset,
+    0 24px 60px -24px rgba(60, 50, 40, .28);
+}
+
+[data-theme="light"] ::selection {
+  background: var(--cinnabar-glow);
+  color: var(--ink-900);
+}
+
 
 /* ---------- reset ---------- */
 *, *::before, *::after { box-sizing: border-box; }
@@ -302,13 +383,13 @@ textarea.field__input { resize: vertical; min-height: 76px; line-height: 1.6; }
 .btn--primary {
   background: var(--cinnabar);
   color: #fff;
-  box-shadow: 0 1px 0 rgba(255, 255, 255, .12) inset,
+  box-shadow: 0 1px 0 var(--inset-hi) inset,
               0 6px 18px -8px var(--cinnabar-glow);
 }
 
 .btn--primary:hover {
   background: #ea5344;
-  box-shadow: 0 1px 0 rgba(255, 255, 255, .16) inset,
+  box-shadow: 0 1px 0 var(--inset-hi-2) inset,
               0 10px 26px -8px var(--cinnabar-glow);
 }
 
@@ -347,7 +428,7 @@ textarea.field__input { resize: vertical; min-height: 76px; line-height: 1.6; }
   content: "";
   position: absolute;
   width: 15px; height: 15px;
-  border: 1.8px solid rgba(255, 255, 255, .3);
+  border: 1.8px solid var(--ring-strong);
   border-top-color: #fff;
   border-radius: 50%;
   animation: spin .6s linear infinite;
@@ -452,7 +533,7 @@ textarea.field__input { resize: vertical; min-height: 76px; line-height: 1.6; }
 
 .nav__item span { font-size: 10px; letter-spacing: .04em; }
 
-.nav__item:hover { color: var(--ink-700); background: rgba(255, 255, 255, .03); }
+.nav__item:hover { color: var(--ink-700); background: var(--hover-wash); }
 
 .nav__item.is-active {
   color: var(--fg);
@@ -851,14 +932,14 @@ textarea.field__input { resize: vertical; min-height: 76px; line-height: 1.6; }
 .table thead th.num { text-align: right; }
 
 .table tbody tr {
-  border-bottom: 1px solid rgba(255, 255, 255, .04);
+  border-bottom: 1px solid var(--hairline);
   cursor: pointer;
   transition: background var(--dur-1) var(--ease);
 }
 
 .table tbody tr:last-child { border-bottom: 0; }
 
-.table tbody tr:hover { background: rgba(255, 255, 255, .03); }
+.table tbody tr:hover { background: var(--hover-wash); }
 
 .table tbody tr.is-selected {
   background: rgba(224, 72, 58, .07);
@@ -1037,7 +1118,7 @@ textarea.field__input { resize: vertical; min-height: 76px; line-height: 1.6; }
   align-items: center;
   gap: var(--s3);
   padding: 10px 0;
-  border-bottom: 1px solid rgba(255, 255, 255, .04);
+  border-bottom: 1px solid var(--hairline);
   font-size: 13px;
 }
 
@@ -1079,7 +1160,7 @@ textarea.field__input { resize: vertical; min-height: 76px; line-height: 1.6; }
   grid-template-columns: 1fr auto;
   gap: var(--s2) var(--s3);
   padding: 9px 0;
-  border-bottom: 1px solid rgba(255, 255, 255, .04);
+  border-bottom: 1px solid var(--hairline);
   font-size: 12px;
 }
 
@@ -1336,13 +1417,13 @@ textarea.field__input { resize: vertical; min-height: 76px; line-height: 1.6; }
   align-items: center;
   gap: var(--s3);
   padding: 9px var(--s3);
-  border-bottom: 1px solid rgba(255, 255, 255, .03);
+  border-bottom: 1px solid var(--hairline-soft);
   cursor: pointer;
   transition: background var(--dur-1) var(--ease);
 }
 
 .item:last-child { border-bottom: 0; }
-.item:hover { background: rgba(255, 255, 255, .035); }
+.item:hover { background: var(--hover-wash-2); }
 
 .item.is-on {
   background: rgba(224, 72, 58, .09);
@@ -1553,7 +1634,7 @@ textarea.field__input { resize: vertical; min-height: 76px; line-height: 1.6; }
   grid-template-columns: 1fr auto;
   gap: var(--s3);
   padding: 6px 0;
-  border-bottom: 1px solid rgba(255, 255, 255, .04);
+  border-bottom: 1px solid var(--hairline);
   font-size: 12px;
 }
 
@@ -1583,7 +1664,7 @@ textarea.field__input { resize: vertical; min-height: 76px; line-height: 1.6; }
   grid-template-columns: 26px 1fr;
   gap: var(--s2);
   padding: 7px 0;
-  border-bottom: 1px solid rgba(255, 255, 255, .04);
+  border-bottom: 1px solid var(--hairline);
   font-size: 12.5px;
 }
 
@@ -1633,7 +1714,7 @@ select.field__input option {
   align-items: center;
   gap: var(--s3);
   padding: 9px 0;
-  border-bottom: 1px solid rgba(255, 255, 255, .04);
+  border-bottom: 1px solid var(--hairline);
   font-size: 12.5px;
 }
 
@@ -1757,7 +1838,7 @@ select.field__input option {
   align-items: center;
   gap: var(--s2);
   padding: 6px 0;
-  border-bottom: 1px solid rgba(255, 255, 255, .04);
+  border-bottom: 1px solid var(--hairline);
   font-size: 12px;
 }
 
@@ -2136,7 +2217,7 @@ select.field__input option {
   align-items: center;
   justify-content: center;
   padding: var(--s5);
-  background: rgba(4, 3, 6, .72);
+  background: var(--overlay);
   backdrop-filter: blur(3px);
   animation: modalFade var(--dur-2) var(--ease) both;
   overflow-y: auto;
@@ -2158,7 +2239,7 @@ select.field__input option {
   border: 1px solid var(--line-hi);
   border-radius: var(--r-lg);
   box-shadow:
-    0 1px 0 rgba(255, 255, 255, .06) inset,
+    0 1px 0 var(--inset-hi-3) inset,
     0 32px 80px -24px rgba(0, 0, 0, .92);
   animation: modalRise var(--dur-3) var(--ease-out) both;
 }
@@ -2237,3 +2318,18 @@ select.field__input option {
   .modal__body { padding: var(--s3) var(--s4); }
   .modal__foot { padding: var(--s3) var(--s4); }
 }
+
+
+/* ============================================================
+   主题切换按钮
+   ============================================================ */
+#themeToggle svg {
+  width: 17px;
+  height: 17px;
+  display: block;
+}
+
+/* 深色下显示月亮（表示当前是深色），浅色下显示太阳 */
+#themeToggle[data-current="dark"] .ic-sun { display: none; }
+#themeToggle[data-current="light"] .ic-moon { display: none; }
+#themeToggle[data-current="light"] { color: var(--amber); }

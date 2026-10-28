@@ -10,6 +10,18 @@ $u = gm_user();
 <meta name="theme-color" content="#0a0a0c">
 <title>幻想西游 · 管理台</title>
 <link rel="icon" href="../images/favicon.ico">
+<script>
+/* 主题必须在样式生效前定好，否则会闪一下白 */
+(function () {
+  try {
+    var t = localStorage.getItem('hxxy-theme');
+    if (!t) t = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', t);
+  } catch (e) {
+    document.documentElement.setAttribute('data-theme', 'dark');
+  }
+})();
+</script>
 <link rel="stylesheet" href="assets/gm.css">
 </head>
 <body data-logged="<?php echo $u ? '1' : '0'; ?>">
@@ -103,6 +115,16 @@ $u = gm_user();
           <span>兑换码</span>
         </button>
       </nav>
+
+      <button class="rail__out" id="themeToggle" title="切换深浅色" aria-label="切换深浅色">
+        <svg class="ic-moon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+          <path d="M16.5 12.2A6.8 6.8 0 0 1 7.8 3.5a6.8 6.8 0 1 0 8.7 8.7Z" stroke-linejoin="round"/>
+        </svg>
+        <svg class="ic-sun" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+          <circle cx="10" cy="10" r="3.6"/>
+          <path d="M10 2.4v2M10 15.6v2M2.4 10h2M15.6 10h2M4.6 4.6l1.4 1.4M14 14l1.4 1.4M15.4 4.6 14 6M6 14l-1.4 1.4" stroke-linecap="round"/>
+        </svg>
+      </button>
 
       <button class="rail__out" id="logout" title="退出登录">
         <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">

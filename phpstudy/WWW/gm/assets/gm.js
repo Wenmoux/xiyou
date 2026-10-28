@@ -2189,6 +2189,30 @@
     });
   }
 
+  /* ============================================================
+     主题切换
+     ============================================================ */
+  function bindTheme() {
+    var btn = $('#themeToggle');
+    if (!btn) return;
+
+    function paint() {
+      var t = document.documentElement.getAttribute('data-theme') || 'dark';
+      btn.setAttribute('data-current', t);
+      btn.title = t === 'dark' ? '切换到浅色' : '切换到深色';
+    }
+
+    paint();
+
+    btn.addEventListener('click', function () {
+      var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+      var next = cur === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', next);
+      try { localStorage.setItem('hxxy-theme', next); } catch (e) {}
+      paint();
+    });
+  }
+
   function boot() {
     if (booted) {
       loadOverview();
@@ -2198,6 +2222,7 @@
 
     // 逐个绑定并隔离错误：某个绑定失败不应影响其余功能
     [
+      ['主题', bindTheme],
       ['导航', bindNav],
       ['玩家', bindPlayers],
       ['世界', bindWorld],
