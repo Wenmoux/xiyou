@@ -2,6 +2,18 @@
 header("Content-type: text/html; charset=utf-8");
 
 ?>
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="format-detection" content="telephone=no">
+<title>35博客游戏社区-注册</title>
+<link rel="icon" href="../img/favicon.ico" type="image/x-icon">
+<link rel="stylesheet" href="../css/touchScreen/xy-gate.css">
+</head>
+<body>
+
 <?php
 
 
@@ -215,124 +227,67 @@ $zcxx="<font color=red>账号不能为空</font>";
 }
 
 ?>
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#0a0806">
-<title>35博客 · 通行证注册</title>
-<link rel="icon" href="../img/favicon.ico" type="image/x-icon">
-<link rel="stylesheet" href="../css/touchScreen/xy-gate.css">
-</head>
-<body class="gate">
 
-<div class="gate__glow" aria-hidden="true"></div>
-<div class="gate__grain" aria-hidden="true"></div>
+<div class="wrap">
 
-<main class="gate__main">
+  <div class="topbar">
+    <img class="logo" src="../images/logo1.jpg" alt="35博客">
+  </div>
 
-  <header class="gate__brand">
-    <div class="gate__seal" aria-hidden="true">
-      <svg viewBox="0 0 64 64" fill="none">
-        <circle cx="32" cy="32" r="27" stroke="currentColor" stroke-width="1.1" opacity=".35"/>
-        <circle cx="32" cy="32" r="18" stroke="currentColor" stroke-width=".9" opacity=".55"/>
-        <path d="M32 6v9M32 49v9M6 32h9M49 32h9" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
-        <circle cx="32" cy="32" r="4.5" fill="currentColor"/>
-      </svg>
-    </div>
-    <h1 class="gate__title">开 启 西 游</h1>
-    <p class="gate__sub">35博客一站式通行证注册</p>
-  </header>
+  <div class="box">
 
-  <section class="gate__card">
-    <div class="gate__hint">
-      <span class="gate__rule"></span>
-      <span>填写通行证信息</span>
-      <span class="gate__rule"></span>
+    <div class="box-hd">
+      <span class="tt"><?echo $zcxx;?>35博客一站式通行证注册</span>
     </div>
 
-    <form class="gate__form" action="<?echo "regist.php";?>" method="post" autocomplete="off">
+    <div class="box-bd">
 
-      <label class="field">
-        <span class="field__label">昵称</span>
-        <input class="field__input" type="text" name="zc6"
-               placeholder="江湖上的名号，四字以内" required>
-        <span class="field__line" aria-hidden="true"></span>
-        <span class="field__note">四字以内</span>
-      </label>
+      <form action="<?echo "regist.php";?>" method="post">
 
-      <label class="field">
-        <span class="field__label">账号</span>
-        <input class="field__input" type="text" name="zc1"
-               placeholder="六至十二位字母或数字" required autocomplete="username">
-        <span class="field__line" aria-hidden="true"></span>
-        <span class="field__note">6–12 位字母或数字</span>
-      </label>
+        <div class="row">
+          <label class="lb">昵称：</label>
+          <input class="inp" type="text" name="zc6" placeholder="请输入昵称">
+        </div>
+        <span class="tip"><font color=red>（4个字符以下）</font></span>
 
-      <div class="field-row">
-        <label class="field">
-          <span class="field__label">密码</span>
-          <input class="field__input" type="password" name="zc2"
-                 placeholder="设置密码" required autocomplete="new-password">
-          <span class="field__line" aria-hidden="true"></span>
-          <span class="field__note">6–12 位字母或数字</span>
-        </label>
+        <div class="row">
+          <label class="lb">账号：</label>
+          <input class="inp" type="text" name="zc1" placeholder="请输入账号" autocomplete="username">
+        </div>
+        <span class="tip"><font color=red>（6-12位的字母或数字）</font></span>
 
-        <label class="field">
-          <span class="field__label">确认密码</span>
-          <input class="field__input" type="password" name="zc3"
-                 placeholder="再输一次" required autocomplete="new-password">
-          <span class="field__line" aria-hidden="true"></span>
-          <span class="field__note">与上方一致</span>
-        </label>
+        <div class="row">
+          <label class="lb">密码：</label>
+          <input class="inp" type="password" name="zc2" placeholder="请输入密码" autocomplete="new-password">
+        </div>
+        <span class="tip"><font color=red>（6-12位的字母或数字）</font></span>
+
+        <div class="row">
+          <label class="lb">确认密码：</label>
+          <input class="inp" type="password" name="zc3" placeholder="请再输入一次" autocomplete="new-password">
+        </div>
+        <span class="tip"><font color=red>（6-12位的字母或数字）</font></span>
+
+        <div class="row row-btn">
+          <input class="btn" type="submit" name="submit" value="注 册">
+        </div>
+      </form>
+
+      <div class="links">
+        <a href="login.php">返回登录</a>
+        <span class="sep">|</span>
+        <a href="../index.php">返回官网</a>
       </div>
 
-      <button class="gate__btn" type="submit" name="submit" value="注册">
-        <span>立 即 注 册</span>
-      </button>
+    </div>
+  </div>
 
-      <p class="gate__msg" role="alert"><?echo $zcxx;?></p>
-    </form>
+  <div class="foot">
+    <p>官方群 54665469 · 服务时间 09:30-21:00</p>
+  </div>
 
-    <nav class="gate__nav">
-      <a href="login.php">已有通行证</a>
-      <span class="gate__dot">·</span>
-      <a href="../index.php">返回官网</a>
-    </nav>
-  </section>
+</div>
 
-  <footer class="gate__foot">
-    <span>官方群 54665469</span>
-    <span class="gate__dot">·</span>
-    <span>服务时间 09:30 - 21:00</span>
-  </footer>
-
-</main>
-
-<script>
-(function () {
-  /* 输入框聚焦效果 */
-  document.querySelectorAll('.field__input').forEach(function (inp) {
-    inp.addEventListener('focus', function () {
-      inp.parentNode.classList.add('is-focus');
-    });
-    inp.addEventListener('blur', function () {
-      inp.parentNode.classList.remove('is-focus');
-    });
-  });
-
-  /* 两次密码一致性预检（不拦截提交，只做提示） */
-  var p1 = document.querySelector('input[name=zc2]');
-  var p2 = document.querySelector('input[name=zc3]');
-  if (p1 && p2) {
-    p2.addEventListener('input', function () {
-      var ok = p2.value === '' || p2.value === p1.value;
-      p2.parentNode.classList.toggle('is-error', !ok);
-    });
-  }
-})();
-</script>
 
 </body>
 </html>

@@ -1,65 +1,40 @@
 /* ============================================================
    35博客 · 通行证（登录 / 注册）
    ------------------------------------------------------------
-   古意不在装饰，在克制：
-     墨底、朱砂一点、细如发丝的界栏、刻意的留白。
-   拒绝卷轴边框、云纹贴图这类堆砌。
-
-   层级：tokens → reset → gate → card → field → 响应式
+   2010 年代页游的观感：浅灰底、白色圆角卡片、蓝色主按钮、
+   细边框分隔、质朴的宋体标题。
+   这一版只做两件事 —— 把当年的味道留住，把粗糙的间距修好。
    ============================================================ */
 
-/* ---------- tokens ---------- */
+/* ---------- 变量 ---------- */
 :root {
-  /* 墨：从夜到宣纸 */
-  --ink-000: #08070a;
-  --ink-050: #0c0b0f;
-  --ink-100: #121016;
-  --ink-150: #191720;
-  --ink-200: #221f2b;
-  --ink-300: #322e3d;
-  --ink-400: #4a4556;
-  --ink-500: #6b6577;
-  --ink-600: #928b9e;
-  --ink-700: #b7b1c2;
-  --ink-800: #d8d3e0;
-  --ink-900: #f2eff6;
+  --bg: #eef1f5;
+  --bg-2: #e3e8ef;
+  --card: #ffffff;
 
-  /* 朱砂 */
-  --cinnabar: #d94a3d;
-  --cinnabar-hi: #ec5c4c;
-  --cinnabar-lo: #a8352a;
-  --glow: rgba(217, 74, 61, .22);
+  --ink: #2c3440;
+  --ink-2: #5a6675;
+  --ink-3: #8a95a3;
 
-  /* 赤金：印章边缘 */
-  --gilt: #c9a227;
+  --line: #d3dae3;
+  --line-2: #e6ebf1;
 
-  --bg: var(--ink-000);
-  --fg: var(--ink-900);
-  --fg-dim: var(--ink-500);
-  --line: rgba(255, 255, 255, .07);
-  --line-hi: rgba(255, 255, 255, .14);
+  /* 当年的主蓝 */
+  --blue: #0086db;
+  --blue-hi: #0d97ef;
+  --blue-lo: #0072bb;
 
-  --font-serif: "Songti SC", "SimSun", "STSong", "Noto Serif SC",
-                "Source Han Serif SC", Georgia, serif;
-  --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI",
-               "PingFang SC", "Microsoft YaHei", sans-serif;
+  --link: #0b6fc4;
+  --red: #d0342c;
 
-  --s1: 4px;  --s2: 8px;  --s3: 12px; --s4: 16px;
-  --s5: 24px; --s6: 32px; --s7: 48px; --s8: 64px;
+  --font: "Microsoft YaHei", "PingFang SC", "Hiragino Sans GB", Arial, sans-serif;
 
-  --r-sm: 4px;
-  --r-md: 8px;
-  --r-lg: 14px;
-
-  --ease: cubic-bezier(.22, .61, .36, 1);
-  --ease-out: cubic-bezier(.16, 1, .3, 1);
-  --dur-1: 150ms;
-  --dur-2: 280ms;
-  --dur-3: 620ms;
+  --r: 10px;
+  --r-sm: 6px;
 }
 
-/* ---------- reset ---------- */
-*, *::before, *::after { box-sizing: border-box; }
+/* ---------- 基础 ---------- */
+* { box-sizing: border-box; }
 
 html, body {
   margin: 0;
@@ -67,427 +42,226 @@ html, body {
   min-height: 100%;
 }
 
-body.gate {
+body {
   background: var(--bg);
-  color: var(--fg);
-  font-family: var(--font-sans);
+  background-image:
+    linear-gradient(180deg, #e9eef4 0%, #eef1f5 42%, #e8edf3 100%);
+  font-family: var(--font);
   font-size: 14px;
   line-height: 1.6;
+  color: var(--ink);
   -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  display: grid;
-  place-items: center;
-  padding: var(--s5);
-  overflow-x: hidden;
-}
-
-h1, p { margin: 0; }
-a { color: inherit; text-decoration: none; }
-button, input { font: inherit; color: inherit; }
-button { border: 0; background: none; cursor: pointer; }
-
-::selection { background: var(--glow); color: var(--ink-900); }
-
-:focus-visible {
-  outline: 2px solid var(--cinnabar);
-  outline-offset: 3px;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
-    animation-duration: .01ms !important;
-    transition-duration: .01ms !important;
-  }
-}
-
-/* ============================================================
-   氛围层
-   ============================================================ */
-.gate__glow {
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: 0;
-  background:
-    radial-gradient(60% 44% at 50% 8%,  rgba(217, 74, 61, .13) 0%, transparent 68%),
-    radial-gradient(48% 38% at 88% 92%, rgba(201, 162, 39, .06) 0%, transparent 62%),
-    radial-gradient(70% 50% at 12% 78%, rgba(90, 80, 140, .08) 0%, transparent 66%);
-  animation: auraDrift 18s var(--ease) infinite alternate;
-}
-
-@keyframes auraDrift {
-  from { opacity: .82; transform: scale(1); }
-  to   { opacity: 1;   transform: scale(1.06); }
-}
-
-/* 极细噪点，消除塑料感 */
-.gate__grain {
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: 1;
-  opacity: .026;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.82' numOctaves='4'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
-}
-
-/* ============================================================
-   主容器
-   ============================================================ */
-.gate__main {
-  position: relative;
-  z-index: 2;
-  width: 100%;
-  max-width: 396px;
-  animation: rise var(--dur-3) var(--ease-out) both;
-}
-
-@keyframes rise {
-  from { opacity: 0; transform: translateY(16px); }
-  to   { opacity: 1; transform: none; }
-}
-
-/* ---------- 品牌区 ---------- */
-.gate__brand {
-  text-align: center;
-  margin-bottom: var(--s6);
-}
-
-.gate__seal {
-  width: 52px;
-  height: 52px;
-  margin: 0 auto var(--s4);
-  color: var(--cinnabar);
-  animation: sealIn 900ms var(--ease-out) both;
-}
-
-.gate__seal svg { width: 100%; height: 100%; display: block; }
-
-@keyframes sealIn {
-  from { opacity: 0; transform: scale(.82) rotate(-8deg); }
-  to   { opacity: 1; transform: none; }
-}
-
-.gate__title {
-  font-family: var(--font-serif);
-  font-size: 34px;
-  font-weight: 500;
-  letter-spacing: .34em;
-  text-indent: .34em;
-  line-height: 1.2;
-  color: var(--ink-900);
-}
-
-.gate__sub {
-  margin-top: var(--s3);
-  font-size: 11.5px;
-  letter-spacing: .3em;
-  text-indent: .3em;
-  color: var(--ink-600);
-}
-
-/* ============================================================
-   卡片
-   ============================================================ */
-.gate__card {
-  position: relative;
-  padding: var(--s6) var(--s6) var(--s5);
-  background: linear-gradient(180deg, rgba(34, 31, 43, .72) 0%, rgba(12, 11, 15, .88) 100%);
-  border: 1px solid var(--line-hi);
-  border-radius: var(--r-lg);
-  backdrop-filter: blur(12px);
-  box-shadow:
-    0 1px 0 rgba(255, 255, 255, .05) inset,
-    0 24px 60px -20px rgba(0, 0, 0, .9);
-}
-
-/* 顶部朱砂细线 */
-.gate__card::before {
-  content: "";
-  position: absolute;
-  top: -1px;
-  left: var(--s7);
-  right: var(--s7);
-  height: 1px;
-  background: linear-gradient(90deg, transparent, var(--cinnabar), transparent);
-  opacity: .7;
-}
-
-/* ---------- 分隔提示 ---------- */
-.gate__hint {
   display: flex;
-  align-items: center;
-  gap: var(--s3);
-  margin-bottom: var(--s5);
-  font-size: 11.5px;
-  letter-spacing: .1em;
-  color: var(--fg-dim);
-  white-space: nowrap;
+  justify-content: center;
+  padding: 24px 16px 48px;
 }
 
-.gate__rule {
-  flex: 1;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, var(--line-hi), transparent);
-}
+a { color: var(--link); text-decoration: none; }
+a:hover { text-decoration: underline; }
 
-/* ============================================================
-   输入框
-   ============================================================ */
-.field {
-  position: relative;
-  display: block;
-  margin-bottom: var(--s5);
-}
-
-.field__label {
-  display: block;
-  margin-bottom: var(--s2);
-  font-family: var(--font-serif);
-  font-size: 12.5px;
-  letter-spacing: .18em;
-  color: var(--ink-600);
-  transition: color var(--dur-2) var(--ease);
-}
-
-.field.is-focus .field__label { color: var(--cinnabar); }
-
-.field__input {
+/* ---------- 外层 ---------- */
+.wrap {
   width: 100%;
-  padding: var(--s3) 0;
-  background: transparent;
-  border: 0;
-  border-bottom: 1px solid var(--line-hi);
-  border-radius: 0;
-  font-size: 15px;
-  letter-spacing: .02em;
-  color: var(--ink-900);
-  transition: border-color var(--dur-2) var(--ease);
+  max-width: 420px;
 }
 
-.field__input::placeholder {
-  color: var(--ink-400);
-  font-size: 13.5px;
-  letter-spacing: .04em;
+/* ---------- 顶栏 ---------- */
+.topbar {
+  text-align: center;
+  padding: 8px 0 20px;
 }
 
-.field__input:focus {
-  outline: none;
-  border-bottom-color: transparent;
-}
-
-/* 聚焦时朱砂线从左展开 */
-.field__line {
-  position: absolute;
-  left: 0;
-  bottom: 0;
+.logo {
+  max-width: 240px;
   width: 100%;
-  height: 1px;
-  background: linear-gradient(90deg, var(--cinnabar), var(--cinnabar-lo) 60%, transparent);
-  transform: scaleX(0);
-  transform-origin: left;
-  transition: transform var(--dur-2) var(--ease-out);
+  height: auto;
+  display: inline-block;
+  border-radius: var(--r-sm);
 }
 
-.field.is-focus .field__line { transform: scaleX(1); }
-
-/* ============================================================
-   主按钮
-   ============================================================ */
-.gate__btn {
-  position: relative;
-  width: 100%;
-  margin-top: var(--s2);
-  padding: 14px var(--s5);
-  background: linear-gradient(180deg, var(--cinnabar) 0%, var(--cinnabar-lo) 100%);
-  border-radius: var(--r-md);
-  font-family: var(--font-serif);
-  font-size: 15px;
-  font-weight: 500;
-  letter-spacing: .32em;
-  text-indent: .32em;
-  color: #fff;
+/* ---------- 卡片 ---------- */
+.box {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  box-shadow: 0 2px 8px rgba(60, 80, 110, .08);
   overflow: hidden;
-  box-shadow:
-    0 1px 0 rgba(255, 255, 255, .16) inset,
-    0 10px 26px -12px var(--glow);
-  transition: transform var(--dur-1) var(--ease),
-              box-shadow var(--dur-2) var(--ease),
-              filter var(--dur-2) var(--ease);
 }
 
-.gate__btn:hover {
-  filter: brightness(1.08);
-  box-shadow:
-    0 1px 0 rgba(255, 255, 255, .2) inset,
-    0 14px 34px -12px var(--glow);
+/* 卡头：浅蓝渐变条 */
+.box-hd {
+  padding: 12px 18px;
+  background: linear-gradient(180deg, #f6f9fc 0%, #eaf1f8 100%);
+  border-bottom: 1px solid var(--line-2);
 }
 
-.gate__btn:active { transform: translateY(1px) scale(.995); }
-
-/* 掠过的高光 */
-.gate__btn::after {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: -60%;
-  width: 40%;
-  height: 100%;
-  background: linear-gradient(100deg, transparent, rgba(255, 255, 255, .26), transparent);
-  transform: skewX(-18deg);
-  transition: left var(--dur-3) var(--ease-out);
-}
-
-.gate__btn:hover::after { left: 120%; }
-
-/* ============================================================
-   提示与导航
-   ============================================================ */
-.gate__msg {
-  min-height: 20px;
-  margin-top: var(--s4);
-  font-size: 12.5px;
-  text-align: center;
-  color: var(--cinnabar-hi);
-  letter-spacing: .04em;
-}
-
-/* 原端 $zcxx 里带 <font color=red>，统一压成主题色 */
-.gate__msg font { color: inherit !important; }
-.gate__msg a { color: var(--ink-700); border-bottom: 1px solid var(--line-hi); }
-
-.gate__nav {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--s3);
-  margin-top: var(--s5);
-  padding-top: var(--s4);
-  border-top: 1px solid var(--line);
-  font-size: 12.5px;
-  color: var(--ink-600);
-}
-
-.gate__nav a {
-  position: relative;
-  padding: 2px 0;
-  transition: color var(--dur-1) var(--ease);
-}
-
-.gate__nav a::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  bottom: 0;
-  width: 100%;
-  height: 1px;
-  background: var(--cinnabar);
-  transform: scaleX(0);
-  transform-origin: left;
-  transition: transform var(--dur-2) var(--ease-out);
-}
-
-.gate__nav a:hover { color: var(--ink-800); }
-.gate__nav a:hover::after { transform: scaleX(1); }
-
-.gate__dot { color: var(--ink-400); }
-
-/* ============================================================
-   页脚
-   ============================================================ */
-.gate__foot {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--s2);
-  margin-top: var(--s6);
-  font-size: 11.5px;
-  letter-spacing: .08em;
-  color: var(--ink-600);
-  text-align: center;
-  flex-wrap: wrap;
-}
-
-/* ============================================================
-   响应式
-   ============================================================ */
-@media (max-width: 480px) {
-  body.gate { padding: var(--s4); }
-
-  .gate__main { max-width: 100%; }
-
-  .gate__title { font-size: 28px; letter-spacing: .28em; text-indent: .28em; }
-  .gate__brand { margin-bottom: var(--s5); }
-  .gate__seal { width: 44px; height: 44px; }
-  .gate__card { padding: var(--s5) var(--s4) var(--s4); }
-  .gate__card::before { left: var(--s5); right: var(--s5); }
-  .field__input { font-size: 16px; }  /* 防 iOS 缩放 */
-  .gate__btn { padding: 13px var(--s4); }
-}
-
-/* 矮屏（横屏手机） */
-@media (max-height: 640px) and (min-width: 481px) {
-  body.gate { padding: var(--s4); }
-  .gate__brand { margin-bottom: var(--s4); }
-  .gate__seal { width: 36px; height: 36px; margin-bottom: var(--s2); }
-  .gate__title { font-size: 24px; }
-  .gate__sub { margin-top: var(--s1); }
-  .field { margin-bottom: var(--s4); }
-}
-
-/* ============================================================
-   注册页扩展
-   ============================================================ */
-
-/* 字段下方的说明文字 */
-.field__note {
+.tt {
   display: block;
-  margin-top: 6px;
-  font-size: 11px;
-  letter-spacing: .04em;
-  color: var(--ink-500);
-  transition: color var(--dur-2) var(--ease);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink);
+  text-align: center;
+  line-height: 1.7;
 }
 
-.field.is-focus .field__note { color: var(--ink-500); }
+/* 原端 $zcxx 带 <font color=red>，保留红色语义 */
+.tt font { color: var(--red) !important; font-weight: 500; }
 
-/* 两次密码不一致 */
-.field.is-error .field__input { border-bottom-color: var(--cinnabar); }
-.field.is-error .field__note { color: var(--cinnabar-hi); }
-.field.is-error .field__note::after {
-  content: " · 不一致";
-  font-weight: 500;
+.box-bd {
+  padding: 22px 24px 18px;
 }
 
-/* 双列：密码 + 确认密码 */
-.field-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--s4);
+/* ---------- 表单行 ---------- */
+.row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 12px;
 }
 
-.field-row .field { margin-bottom: var(--s5); }
-
-/* 注册页字段较多，压缩一点间距 */
-.gate__card .field { margin-bottom: var(--s4); }
-.gate__card .field-row .field { margin-bottom: var(--s4); }
-
-/* 注册页标题略小（三字 -> 撑得开） */
-.gate__title { font-size: 30px; }
-
-@media (max-width: 480px) {
-  .gate__title { font-size: 26px; }
-
-  /* 手机竖屏时密码拆成上下两行，避免过窄 */
-  .field-row {
-    grid-template-columns: 1fr;
-    gap: 0;
-  }
-
-  .field-row .field { margin-bottom: var(--s4); }
+.lb {
+  flex: 0 0 62px;
+  font-size: 14px;
+  color: var(--ink-2);
+  text-align: right;
+  padding-right: 10px;
 }
 
-@media (max-height: 700px) and (min-width: 481px) {
-  /* 矮屏注册页：隐藏副标题腾空间 */
-  .gate__sub { display: none; }
-  .gate__hint { margin-bottom: var(--s4); }
+/* 输入框：当年那种内嵌阴影的小圆角框 */
+.inp {
+  flex: 1;
+  min-width: 0;
+  height: 34px;
+  padding: 0 10px;
+  background: #fdfdfe;
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  font-family: var(--font);
+  font-size: 14px;
+  color: var(--ink);
+  box-shadow: inset 0 1px 2px rgba(80, 100, 130, .06);
+  transition: border-color .15s ease, box-shadow .15s ease, background .15s ease;
+}
+
+.inp::placeholder {
+  color: #a8b2be;
+  font-size: 13px;
+}
+
+.inp:hover { border-color: #bcc7d4; }
+
+.inp:focus {
+  outline: 0;
+  background: #fff;
+  border-color: var(--blue);
+  box-shadow: 0 0 0 3px rgba(0, 134, 219, .12),
+              inset 0 1px 2px rgba(80, 100, 130, .04);
+}
+
+/* ---------- 按钮 ---------- */
+.row-btn {
+  margin-top: 18px;
+  padding-left: 62px;
+}
+
+.btn {
+  width: 100%;
+  height: 38px;
+  background: linear-gradient(180deg, var(--blue-hi) 0%, var(--blue) 52%, var(--blue-lo) 100%);
+  border: 1px solid var(--blue-lo);
+  border-radius: var(--r-sm);
+  font-family: var(--font);
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: .28em;
+  text-indent: .28em;
+  color: #fff;
+  cursor: pointer;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, .18);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, .28) inset,
+              0 2px 4px rgba(0, 110, 190, .22);
+  transition: filter .15s ease, box-shadow .15s ease, transform .08s ease;
+}
+
+.btn:hover {
+  filter: brightness(1.06);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, .34) inset,
+              0 3px 7px rgba(0, 110, 190, .28);
+}
+
+.btn:active {
+  transform: translateY(1px);
+  box-shadow: inset 0 1px 3px rgba(0, 60, 110, .3);
+}
+
+/* ---------- 链接行 ---------- */
+.links {
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px dashed var(--line-2);
+  text-align: center;
+  font-size: 13px;
+  color: var(--ink-3);
+}
+
+.links a { color: var(--link); }
+
+.links .sep {
+  margin: 0 8px;
+  color: #c3ccd7;
+  font-size: 12px;
+}
+
+/* ---------- 页脚 ---------- */
+.foot {
+  margin-top: 22px;
+  text-align: center;
+  font-size: 12px;
+  color: var(--ink-3);
+  line-height: 1.9;
+}
+
+.foot p { margin: 0; }
+
+/* ---------- 注册页调整 ---------- */
+/* 昵称说明（原端是 <font color=red>（4个字符以下）） */
+.tip {
+  display: block;
+  margin: -4px 0 12px 72px;
+  font-size: 12px;
+  color: var(--ink-3);
+}
+
+.tip font { color: var(--ink-3) !important; }
+
+/* 密码双列 */
+.row-2 {
+  display: flex;
+  gap: 10px;
+}
+
+.row-2 .row { flex: 1; margin-bottom: 12px; }
+
+.row-2 .lb { flex: 0 0 46px; }
+
+.row-2 .row-btn { display: none; }
+
+/* ---------- 响应式 ---------- */
+@media (max-width: 460px) {
+  body { padding: 16px 12px 40px; }
+
+  .logo { max-width: 200px; }
+
+  .box-bd { padding: 18px 16px 14px; }
+
+  .lb { flex: 0 0 52px; font-size: 13.5px; }
+
+  .row-btn { padding-left: 52px; }
+
+  .inp { font-size: 16px; }  /* 防 iOS 缩放 */
+
+  .tip { margin-left: 62px; }
+
+  /* 手机竖屏：密码不拆列 */
+  .row-2 { flex-direction: column; gap: 0; }
+  .row-2 .lb { flex: 0 0 52px; }
 }
