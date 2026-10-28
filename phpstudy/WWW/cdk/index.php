@@ -12,8 +12,8 @@ require_once $root . "/gm/lib/cdk.php";
 
 gm_use_game();
 
-$wjid = isset($_GET["wjid"]) ? (int)$_GET["wjid"] : 0;
-$pass = isset($_GET["pass"]) ? trim((string)$_GET["pass"]) : "";
+$wjid = isset($_GET["wjid"]) ? (int)$_GET["wjid"] : (isset($_POST["wjid"]) ? (int)$_POST["wjid"] : 0);
+$pass = isset($_GET["pass"]) ? trim((string)$_GET["pass"]) : (isset($_POST["pass"]) ? trim((string)$_POST["pass"]) : "");
 
 // ---- 身份校验：与游戏同一套（玩家游戏码） ----
 $nick = "";
@@ -31,14 +31,23 @@ if ($wjid <= 0) {
         $authErr = "找不到角色存档";
     } else {
         $txt = file_get_contents($ini);
+
+        // 优先用游戏码（xy.php 的 sid 就是它）
         $expect = "";
         if (preg_match("/玩家游戏码[ \t]*=[ \t]*([A-Za-z0-9]+)/u", $txt, $m)) {
             $expect = $m[1];
         }
+        // 兼容：也接受玩家验证哈希（登录层的 pass）
+        $expect2 = "";
+        if (preg_match("/玩家验证[ \t]*=[ \t]*([A-Za-z0-9]+)/u", $txt, $m3)) {
+            $expect2 = $m3[1];
+        }
         if (preg_match("/昵称[ \t]*=[ \t]*([^\r\n]+)/u", $txt, $m2)) {
             $nick = trim($m2[1]);
         }
-        if ($expect === "" || $pass === "" || $pass !== $expect) {
+        $ok = ($expect !== "" && $pass === $expect)
+           || ($expect2 !== "" && $pass === $expect2);
+        if (!$ok) {
             $authErr = "身份校验失败，请重新登录游戏";
         }
     }
@@ -108,7 +117,11 @@ if ($authErr === "" && isset($_POST["code"])) {
       <span class="who__id">#<?php echo $wjid; ?></span>
     </div>
 
-    <form method="post" action="index.php?wjid=<?php echo $wjid; ?>&pass=<?php echo urlencode($pass); ?>">
+    <form method="post" action="index.php?wjid=<?php echo urlencode($wjid); ?>&pass=<?php echo urlencode($pass); ?>">
+      <!-- 隐藏字段：防止跳到 POST 时丢失身份参数 -->
+      <input type="hidden" name="wjid" value="<?php echo htmlspecialchars($wjid, ENT_QUOTES); ?>">
+      <input type="hidden" name="pass" value="<?php echo htmlspecialchars($pass, ENT_QUOTES); ?>">
+
       <div class="row">
         <label class="lb">兑换码：</label>
         <input class="inp" type="text" name="code"

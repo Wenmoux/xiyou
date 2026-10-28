@@ -64,7 +64,11 @@ box-shadow:inset 0 1px 1px rgba(0,0,0,.075),0 0 8px rgba(102,175,233,0.6);
 <?php
 // 进入游戏入口：原端登录成功后只显示提示，没有任何通往 fqxy 游戏的链接，
 // 这里补一个按钮，跳 play.php 完成存档初始化后进入游戏。
-if (isset($wjid) && $wjid != '' && isset($password) && $password != '') {
+// 变量顺序修复：参数必须先取到，否则按钮永远不显示
+$wjid     = isset($_GET['wjid']) ? $_GET['wjid'] : '';
+$password = isset($_GET['pass']) ? $_GET['pass'] : '';
+
+if ($wjid != '' && $password != '') {
     echo '<div style="margin:18px 0;text-align:center">'
        . '<a href="/play.php?wjid=' . urlencode($wjid) . '&pass=' . urlencode($password) . '" '
        . 'style="display:inline-block;padding:13px 40px;background:#c8102e;color:#fff;'
