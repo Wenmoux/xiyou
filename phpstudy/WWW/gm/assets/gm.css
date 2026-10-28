@@ -2123,3 +2123,117 @@ select.field__input option {
   .stats--inline { gap: var(--s4); }
   .stats--inline .stat__v { font-size: 15px; }
 }
+
+
+/* ============================================================
+   弹窗基础（礼包编辑器 / 选择器共用）
+   ============================================================ */
+.modal {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--s5);
+  background: rgba(4, 3, 6, .72);
+  backdrop-filter: blur(3px);
+  animation: modalFade var(--dur-2) var(--ease) both;
+  overflow-y: auto;
+}
+
+@keyframes modalFade {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.modal__box {
+  position: relative;
+  width: 100%;
+  max-width: 480px;
+  max-height: calc(100vh - 2 * var(--s5));
+  display: flex;
+  flex-direction: column;
+  background: var(--ink-100);
+  border: 1px solid var(--line-hi);
+  border-radius: var(--r-lg);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, .06) inset,
+    0 32px 80px -24px rgba(0, 0, 0, .92);
+  animation: modalRise var(--dur-3) var(--ease-out) both;
+}
+
+@keyframes modalRise {
+  from { opacity: 0; transform: translateY(14px) scale(.985); }
+  to   { opacity: 1; transform: none; }
+}
+
+.modal__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s3);
+  padding: var(--s4) var(--s5);
+  border-bottom: 1px solid var(--line);
+  flex: 0 0 auto;
+}
+
+.modal__head h3 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink-900);
+  letter-spacing: .02em;
+}
+
+.modal__x {
+  flex: 0 0 auto;
+  width: 26px;
+  height: 26px;
+  display: grid;
+  place-items: center;
+  border-radius: var(--r-sm);
+  font-size: 17px;
+  line-height: 1;
+  color: var(--ink-500);
+  transition: background var(--dur-1) var(--ease), color var(--dur-1) var(--ease);
+}
+
+.modal__x:hover {
+  background: var(--ink-200);
+  color: var(--ink-800);
+}
+
+.modal__body {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  padding: var(--s4) var(--s5);
+}
+
+.modal__foot {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--s2);
+  padding: var(--s3) var(--s5);
+  border-top: 1px solid var(--line);
+  background: var(--ink-050);
+  flex: 0 0 auto;
+}
+
+/* 窄屏：弹窗贴底，避免被键盘顶飞 */
+@media (max-width: 640px) {
+  .modal {
+    padding: var(--s3);
+    align-items: flex-end;
+  }
+
+  .modal__box {
+    max-height: 88vh;
+    border-radius: var(--r-lg) var(--r-lg) var(--r-md) var(--r-md);
+  }
+
+  .modal__head { padding: var(--s3) var(--s4); }
+  .modal__body { padding: var(--s3) var(--s4); }
+  .modal__foot { padding: var(--s3) var(--s4); }
+}
